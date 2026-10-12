@@ -1,82 +1,130 @@
 <div align="center">
 
-# RVC Studio
+# 🎙️ RVC Studio
 
-**Windows için gerçek zamanlı yapay zekâ ses dönüştürme ve Soundpad uygulaması**  
-*Real-time AI voice conversion and soundboard for Windows*
+### Sesini değiştir. Seslerini yönet. Hepsi tek uygulamada.
+**Windows için gerçek zamanlı yapay zekâ ses dönüştürme, Soundpad ve dosyadan dönüşüm.**
 
-[![Release](https://img.shields.io/github/v/release/skymoonai/rvc-voicechanger?include_prereleases&label=beta%20release)](https://github.com/skymoonai/rvc-voicechanger/releases)
-![Windows](https://img.shields.io/badge/Windows-10%2F11%20x64-blue)
-![Beta](https://img.shields.io/badge/status-public%20beta-orange)
+*Real-time AI voice conversion, soundboard, and offline conversion for Windows.*
 
-[**⬇️ İndir / Download**](https://github.com/skymoonai/rvc-voicechanger/releases) · [**🐛 Hata bildir / Report a bug**](https://github.com/skymoonai/rvc-voicechanger/issues/new/choose) · [**English**](#english)
+[![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D6?style=for-the-badge&logo=windows)](https://github.com/skymoonai/rvc-voicechanger/releases)
+[![Beta](https://img.shields.io/badge/STATUS-PUBLIC%20BETA-8B5CF6?style=for-the-badge)](https://github.com/skymoonai/rvc-voicechanger/releases)
+[![Latest release](https://img.shields.io/github/v/release/skymoonai/rvc-voicechanger?include_prereleases&style=for-the-badge&label=LATEST)](https://github.com/skymoonai/rvc-voicechanger/releases)
+[![MIT License](https://img.shields.io/badge/License-MIT-64748b?style=for-the-badge)](LICENSE)
+
+### [⬇️ RVC Studio v1.5.1 Beta 1 — İndir / Download](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.1-beta.1/RVC_Studio_Setup_1.5.1_Beta1.exe)
+
+[📦 Tüm sürümler / All releases](https://github.com/skymoonai/rvc-voicechanger/releases) · [📘 English](#english) · [🐛 Hata bildir / Bug reports](https://github.com/skymoonai/rvc-voicechanger/issues/new/choose)
 
 </div>
 
-> [!WARNING]
-> **Beta sürüm:** RVC Studio geliştirme aşamasındadır. Hatalar, çökmeler, ses kesintileri veya bazı cihazlarla uyumsuzluklar olabilir. Önemli seslerinizi ve profillerinizi yedekleyin. Proje ücretsiz ve kâr amacı gütmeyen bir girişim olarak geliştirilmektedir.
+---
 
-## 🇹🇷 Türkçe
+## 🖥️ Uygulamadan bir görüntü / Preview
 
-### Nedir?
+<div align="center">
 
-RVC Studio, RVC tabanlı ses modelleriyle **mikrofon sesini gerçek zamanlı dönüştürmek**, ses dosyalarını modele dönüştürmek ve **Soundpad** üzerinden klipler çalmak için geliştirilen Windows masaüstü uygulamasıdır. Türkçe ve İngilizce arayüzü vardır.
+![RVC Studio modern arayüz — ses dönüştürme, model kitaplığı ve kontrol paneli](assets/github/rvc-studio-main-screen.webp)
 
-### Özellikler
+*Gerçek uygulama ekran görüntüsü · RVC Studio v1.5.1 Beta 1*
 
-| Özellik | Açıklama |
-|---|---|
-| 🎙️ Canlı RVC | Seçili ses modeliyle gerçek zamanlı mikrofon dönüştürme |
-| 🔊 Soundpad | Klip çalma/düzenleme, kısayollar, mikrofona ve kulaklığa ayrı ses düzeyi |
-| 🎼 Dosyadan dönüşüm | MP3/WAV dosyalarını ses modeliyle dönüştürme, WAV çıktısı |
-| 📚 Model kütüphanesi | Ses modellerini ve modele özel ayarları yönetme |
-| 📦 Taşınabilir profiller | Modellerin/ayarların ve Soundpad seslerinin içe/dışa aktarımı |
-| 🖥️ Donanım seçenekleri | CPU, NVIDIA CUDA; AMD/Intel DirectML (deneysel) |
-| 🌐 Arayüz dilleri | Türkçe ve İngilizce |
-| 🔄 Güncelleme ve geri alma | İmzalı paketler, SHA-256 doğrulaması, son güncellemeyi geri alma |
-| 🎚️ Ses araçları | Gürültü azaltma ve ek ses işleme seçenekleri |
+</div>
 
-### İndirme ve kurulum
+> [!IMPORTANT]
+> **Ücretsiz ve kâr amacı gütmeyen bir beta projesi.** RVC Studio hâlen geliştirme aşamasındadır. Bazı bilgisayarlarda ses kesintileri, gecikme, hatalar veya çökmeler yaşanabilir. Önemli ses kliplerini, modellerinizi ve profillerinizi yedekleyin.
 
-1. [**GitHub Releases**](https://github.com/skymoonai/rvc-voicechanger/releases) sayfasından uygun **beta** `RVC_Studio_Setup_*.exe` dosyasını indirin.
-2. **Windows 10/11 64-bit** üzerinde kurucuyu çalıştırın ve kurulum dizinini seçin.
-3. İşlemci veya ekran kartı seçin: **CPU**, **NVIDIA RTX 40 (CUDA 11.8)**, **NVIDIA RTX 50 (CUDA 12.8)** ya da **AMD/Intel DirectML (deneysel)**.
-4. Kurulum Python ve gerekli paketleri internetten indirir; aktif bağlantı ve yeterli disk alanı gerekir.
-5. Mikrofon, kulaklık ve gerekiyorsa sanal ses kablosunu seçip kullanma hakkına sahip olduğunuz RVC modelini ekleyin.
+## 🇹🇷 RVC Studio nedir?
 
-> **Sanal kablo:** VAC Lite ayrı bir üçüncü taraf ürünüdür ve kendi lisansına tabidir; kişisel ev kullanımı koşullarını okuyun. Var olan başka bir sanal ses kablosunu da seçebilirsiniz.
+**RVC Studio**, RVC tabanlı ses modellerini günlük kullanım için erişilebilir hale getirmeyi amaçlayan Windows masaüstü uygulamasıdır. Farklı uygulamalar arasında geçiş yapmak yerine mikrofon dönüştürme, klip oynatma, model kütüphanesi ve ses dosyası dönüştürme işlemlerini tek arayüzden yönetebilirsiniz.
 
-### Güncelleme ve geri alma
+### ✨ Neler yapabilirsiniz?
 
-**Ayarlar → Güncelleme ve Geri Alma** bölümünden Beta/Stable kanalını, güncelleme kontrolünü ve geri almayı kullanabilirsiniz. Uygulama indirilen güncellemelerde **Ed25519 imzasını** ve dosya bütünlüğünü doğrular. Kod odaklı güncellemeler ses modellerinizi, Soundpad kitaplığınızı ve profillerinizi değiştirmemek üzere tasarlanmıştır. Önemli bağımlılık/sürücü güncellemeleri tam kurucu gerektirebilir.
+| Özellik | Neler sunuyor? |
+|:--|:--|
+| 🎤 **Canlı ses dönüştürme** | Mikrofon sesini seçtiğiniz RVC modeliyle gerçek zamanlı işleme, dönüştürülmüş/normal mikrofon seçimi |
+| 🎚️ **Model ve ses ayarları** | Pitch, ses karakteri, index rate, ses yüksekliği ve modele özel dönüşüm seçenekleri |
+| 📚 **Ses modeli kütüphanesi** | PTH/INDEX seçimi, model profilleri, yeniden adlandırma, kaydetme ve paylaşılabilir profil verileri |
+| 🔊 **Soundpad** | Ses kliplerini oynatma, klip düzenleme, zaman çizelgesinde tıklayarak atlama, mikrofona ve kulaklığa ayrı ses seviyesi |
+| 💾 **Soundpad yedekleri** | Ses kliplerini ve ilgili ayarları **.rvcsoundpad** profiliyle dışa/içe aktarma |
+| 🎹 **Klavye kısayolları** | Kullanıcının atadığı kısayollarla sesleri ve desteklenen işlemleri yönetme |
+| 🎼 **Dosyadan dönüştürme** | Desteklenen ses dosyalarını RVC modeli üzerinden işleme ve çıktıyı dinleme |
+| 🧪 **Ses testi / A-B** | Kısa ses testleri, yeniden dinleme ve farklı ayarları karşılaştırma |
+| 🧹 **Ses temizleme ve kalite** | Gürültü/ses işleme ve kalite seçeneklerini ayrı bölümde düzenleme |
+| 🎛️ **Giriş ve çıkış** | Mikrofon/kulaklık/sanal ses aygıtı seçimi, giriş/çıkış seviyeleri, sessize alma |
+| 📊 **Canlı durum** | Gecikme, çıkarım süresi, GPU kullanımına ilişkin mevcut durum göstergeleri |
+| 📂 **Kullanıcı profilleri** | Modeller ve ayarlar için sürümler arası taşıma ve yedekleme |
+| 🌐 **TR / EN** | Türkçe ve İngilizce arayüz |
+| 🖥️ **Sistem tepsisi** | Tepsiye küçültme, kapatma onayı ve arka planda kullanım seçenekleri |
+| 🔄 **Güvenli güncelleme** | Uygulama içinden sürüm kontrolü, Ed25519 imzalı güncellemeler ve desteklenen son güncellemeyi geri alma |
 
-### Hata bildirme
+### ⚡ Donanım seçenekleri
 
-[**GitHub Issues**](https://github.com/skymoonai/rvc-voicechanger/issues/new/choose) üzerinden uygulama sürümünü, Windows ve CPU/GPU bilgilerini, hatanın nasıl tekrarlandığını ve hassas bilgilerden temizlenmiş hata mesajını paylaşın. **Özel ses dosyaları, model ağırlıkları, anahtarlar veya kişisel dosya yollarını public issue'lara yüklemeyin.**
+- **CPU:** Uyumlu işlemcilerde çalıştırma; performans modele ve sisteme göre değişir.
+- **NVIDIA CUDA:** Kurucuda CUDA 11.8 / CUDA 12.8 tabanlı NVIDIA profilleri bulunur.
+- **AMD / Intel DirectML:** Deneysel GPU seçeneği; performans ve destek cihazlara göre değişebilir.
 
-### Sorumlu kullanım ve lisans
+> Gerçek zamanlı gecikme; ses sürücüsü, örnekleme hızı, seçilen model ve donanıma bağlıdır. Her bilgisayarda aynı performans garanti edilmez.
 
-- Başkasının sesini kullanmadan önce **izin alın**. Taklit, aldatma, dolandırıcılık veya izinsiz kimliğe bürünme amacıyla kullanmayın.
-- İndirdiğiniz ses ve modellerin lisans/telif haklarına uyun; güvenmediğiniz `.pth` modellerini yüklemeyin.
-- Yazılım **olduğu gibi** sağlanır. Bir README veya kullanıcı sözleşmesi, kullanıcının hukuki sorumluluklarını otomatik kaldırmaz.
-- Depodaki **MIT lisansı**, üçüncü taraf bileşen ve model ağırlıklarına kendiliğinden hak vermez. Projenin kâr amacı gütmemesi MIT'nin izinlerini değiştirmez.
+## ⬇️ Kurulum — 5 adımda başla
+
+1. **[RVC Studio Setup.exe'yi indir](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.1-beta.1/RVC_Studio_Setup_1.5.1_Beta1.exe).** Güncel sürüm değişmiş olabileceği için [Releases sayfasını](https://github.com/skymoonai/rvc-voicechanger/releases) da kontrol edebilirsiniz.
+2. **Windows 10/11 (64 bit)** bilgisayarınızda kurucuyu açın ve istediğiniz kurulum klasörünü seçin.
+3. Donanımınıza uygun **CPU / NVIDIA CUDA / AMD-Intel DirectML** profilini seçin.
+4. İlk kurulumda Python ve gerekli paketlerin indirilmesi için **internet bağlantısı ve yeterli disk alanı** sağlayın.
+5. Mikrofon ve ses çıkışını ayarlayıp **kullanım hakkına sahip olduğunuz** bir RVC ses modeli ekleyin. Gerekiyorsa sanal ses kablosu yapılandırın.
+
+> Sanal ses kablosu için VAC Lite veya mevcut başka bir sanal aygıt kullanılabilir. Üçüncü taraf ses kablolarının ve modellerin **kendi lisans koşulları** geçerlidir.
+
+### 🔄 Güncelleme ve önceki sürüme dönme
+
+**Ayarlar → Güncelleme ve Geri Alma** bölümünden Beta kanalını seçip güncellemeleri denetleyebilirsiniz. Güncelleme paketleri **imza ve dosya bütünlüğü doğrulamasından** geçer. Desteklenen kod güncellemelerinde son güncellemeyi geri almak mümkündür.
+
+Yeni Python bağımlılıkları veya sürücüler gerektiren büyük değişikliklerde **yeni Setup.exe** ile kurulum gerekebilir. Ses modelleri, Soundpad klipleri ve profiller kullanıcı verisi olarak korunmak üzere tasarlanmıştır; yine de sürüm yükseltmeden önce yedek alın.
+
+## 🛡️ Güvenlik ve sorumlu kullanım
+
+RVC Studio'yu **izinsiz ses taklidi, dolandırıcılık, aldatma veya kimliğe bürünme** amacıyla kullanmayın. Sesini kullanacağınız kişilerden izin alın; modellerin ve üçüncü taraf bileşenlerin lisanslarına uyun. Güvenilir olmayan model dosyalarını çalıştırmayın.
+
+Yazılım **beta olarak, olduğu gibi** sunulur; garanti verilmez. Projenin ticari amaç gütmemesi, geçerli yasaları veya üçüncü taraf lisanslarını ortadan kaldırmaz. Depodaki [MIT lisansı](LICENSE), bağımsız üçüncü taraf yazılımlar ve model ağırlıkları için otomatik kullanım hakkı sağlamaz.
+
+Hassas verilerinizi herkese açık hata raporlarına eklemeyin. Güvenlik bildirimleri için [SECURITY.md](SECURITY.md) dosyasına bakın.
+
+### 🐛 Sorun mu yaşadınız?
+
+[**GitHub Issues üzerinden hata bildirin**](https://github.com/skymoonai/rvc-voicechanger/issues/new/choose). Bildiriminize sürümü, Windows sürümünü, CPU/GPU ve ses cihazlarını, hatanın tekrarlanma adımlarını ve **kişisel bilgileri ayıklanmış** hata metnini ekleyin.
 
 ---
 
 ## English
 
-RVC Studio is a **Windows desktop app for real-time RVC voice conversion, offline file conversion, and Soundpad playback**. It includes Turkish/English UI, portable model and Soundpad profiles, CPU/NVIDIA CUDA backends, experimental AMD/Intel DirectML support, and signed software updates with rollback.
+**RVC Studio** is a free, non-commercial **Windows voice changer and soundboard** built around RVC voice models. It combines real-time microphone conversion, offline file conversion, model profiles, Soundpad playback and editing, voice testing, audio device controls, Turkish/English UI, and signed updates with rollback.
 
-### Install
+### Features
 
-Download the latest applicable **beta** `RVC_Studio_Setup_*.exe` from [GitHub Releases](https://github.com/skymoonai/rvc-voicechanger/releases). Run on **Windows 10/11 x64**, choose an installation directory and hardware backend, and allow the installer to download Python dependencies. Use only voice models you are authorized to use.
+- **Real-time RVC voice conversion:** pitch and model controls, processed/raw microphone toggle.
+- **Soundpad:** play and edit clips, seek on the timeline, separate microphone/headphone gain, configurable shortcuts, portable .rvcsoundpad backups.
+- **Offline file conversion and A/B voice testing** with playback.
+- **Voice model library and portable profiles** for model-specific settings.
+- **CPU, NVIDIA CUDA, and experimental AMD/Intel DirectML** hardware profiles.
+- **Audio input/output settings, cleanup options, status meters**, and system-tray controls.
+- **Signed application updates and supported rollback**, with checks for downloaded packages.
 
-### Updating
+### Download and install
 
-Open **Settings → Updates and Rollback** to check for cryptographically verified updates or roll back the most recent supported code update. Models, Soundpad clips, profiles and Python environments are excluded from normal code-only patches. A full installer may be required for major dependencies.
+**[⬇️ Download RVC Studio v1.5.1 Beta 1 for Windows](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.1-beta.1/RVC_Studio_Setup_1.5.1_Beta1.exe)**
 
-### Safety
+Use Windows 10/11 x64. Run the installer, choose an installation path and compute backend, allow the initial dependency downloads, then configure your input/output devices and load a properly licensed voice model.
 
-**Beta software, provided as-is.** Bugs, crashes, audio glitches and incompatibilities are possible. Back up important data. Never use voice conversion for impersonation, fraud or deception. Respect the rights of voice owners and third-party software/model licenses. Report sensitive vulnerabilities privately using [SECURITY.md](SECURITY.md).
+This is **beta software**: bugs, crashes, audio glitches and incompatibilities may occur. Back up important data. Use voice conversion responsibly and respect consent, copyright and third-party licenses.
 
-**Publisher:** [skymoonai](https://github.com/skymoonai) · [Changelog](CHANGELOG.md) · [Security](SECURITY.md) · [Releases](https://github.com/skymoonai/rvc-voicechanger/releases)
+[**All releases**](https://github.com/skymoonai/rvc-voicechanger/releases) · [**Report an issue**](https://github.com/skymoonai/rvc-voicechanger/issues/new/choose) · [**Changelog**](CHANGELOG.md) · [**Security**](SECURITY.md)
+
+---
+
+<div align="center">
+
+**RVC Studio · Open beta · Windows**
+
+Yararlı bulduysanız ⭐ repo'ya yıldız bırakabilirsiniz. / If you find it useful, consider starring the repository.
+
+</div>
