@@ -12,7 +12,7 @@
 [![Latest release](https://img.shields.io/github/v/release/skymoonai/rvc-voicechanger?include_prereleases&style=for-the-badge&label=LATEST)](https://github.com/skymoonai/rvc-voicechanger/releases)
 [![MIT License](https://img.shields.io/badge/License-MIT-64748b?style=for-the-badge)](LICENSE)
 
-### [⬇️ RVC Studio v1.5.1 Beta 1 — İndir / Download](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.1-beta.1/RVC_Studio_Setup_1.5.1_Beta1.exe)
+### [⬇️ RVC Studio v1.5.2 Beta 1 — İndir / Download](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.2-beta.1/RVC_Studio_Setup_1.5.2_Beta1.exe)
 
 [📦 Tüm sürümler / All releases](https://github.com/skymoonai/rvc-voicechanger/releases) · [📘 English](#english) · [🐛 Hata bildir / Bug reports](https://github.com/skymoonai/rvc-voicechanger/issues/new/choose)
 
@@ -67,7 +67,7 @@
 
 ## ⬇️ Kurulum — 5 adımda başla
 
-1. **[RVC Studio Setup.exe'yi indir](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.1-beta.1/RVC_Studio_Setup_1.5.1_Beta1.exe).** Güncel sürüm değişmiş olabileceği için [Releases sayfasını](https://github.com/skymoonai/rvc-voicechanger/releases) da kontrol edebilirsiniz.
+1. **[RVC Studio Setup.exe'yi indir](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.2-beta.1/RVC_Studio_Setup_1.5.2_Beta1.exe).** Güncel sürüm değişmiş olabileceği için [Releases sayfasını](https://github.com/skymoonai/rvc-voicechanger/releases) da kontrol edebilirsiniz.
 2. **Windows 10/11 (64 bit)** bilgisayarınızda kurucuyu açın ve istediğiniz kurulum klasörünü seçin.
 3. Donanımınıza uygun **CPU / NVIDIA CUDA / AMD-Intel DirectML** profilini seçin.
 4. İlk kurulumda Python ve gerekli paketlerin indirilmesi için **internet bağlantısı ve yeterli disk alanı** sağlayın.
@@ -111,7 +111,7 @@ Hassas verilerinizi herkese açık hata raporlarına eklemeyin. Güvenlik bildir
 
 ### Download and install
 
-**[⬇️ Download RVC Studio v1.5.1 Beta 1 for Windows](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.1-beta.1/RVC_Studio_Setup_1.5.1_Beta1.exe)**
+**[⬇️ Download RVC Studio v1.5.2 Beta 1 for Windows](https://github.com/skymoonai/rvc-voicechanger/releases/download/v1.5.2-beta.1/RVC_Studio_Setup_1.5.2_Beta1.exe)**
 
 Use Windows 10/11 x64. Run the installer, choose an installation path and compute backend, allow the initial dependency downloads, then configure your input/output devices and load a properly licensed voice model.
 
