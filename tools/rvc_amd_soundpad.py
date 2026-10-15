@@ -40,8 +40,12 @@ def install_soundpad(pad, edition):
                 match = wasapi_device_index(label, sd.query_devices(), sd.query_hostapis())
                 if match is not None:
                     return match
+                if label:
+                    self.error = "AMD Soundpad: seçili WASAPI çıkışı bulunamadı: " + label
+                    return None
             except Exception as exc:
                 self.error = "AMD Soundpad aygıt sorgulama hatası: " + str(exc)
+                return None
         return original(lane)
 
     pad._output_device = MethodType(amd_device, pad)
