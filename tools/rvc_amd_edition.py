@@ -47,6 +47,10 @@ class AmdEdition:
         self._download_busy = False
         self._passthrough = False
         self._recent_error = None
+        self._recording = False
+        self._capture_stop = threading.Event()
+        self._ab_resume = False
+        self._file_resume = False
         self._log_window = getattr(window, "log_view", None)
         self._input_names = []
         self._output_names = []
@@ -210,9 +214,11 @@ class AmdEdition:
                 widget.setToolTip("AMD Edition RNNoise seçeneğini Ses Temizleme bölümünden kullan.")
 
     def _configure_tools(self):
-        from tools.rvc_amd_tasks import install_file_conversion
+        from tools.rvc_amd_tasks import install_file_conversion, install_studio_tests, install_capture
         try:
             install_file_conversion(self.window.owner.file_converter, self)
+            install_studio_tests(self.window.owner.studio_tools, self)
+            install_capture(self.window.owner.studio_tools, self)
         except Exception as exc:
             self._status("AMD dosya dönüştürme bağlanamadı: " + str(exc))
         # Soundpad remains in the original UI, but microphone overlay comes
@@ -325,6 +331,7 @@ class AmdEdition:
             silence_threshold=db_to_linear(self.read_value("threhold", -60)),
             denoiser=mode,
             passthrough=bool(self.read_value("im", False)),
+            output_gain=0.0 if self.window.owner.studio_tools.muted else 1.0,
         )
 
     def start(self):
@@ -447,6 +454,27 @@ class AmdEdition:
                 self._converting = False
                 self._pending_start = False
                 self._status("ONNX dönüştürme hatası: " + str(payload))
+            elif kind == "test_done":
+                raw, output, settings, resume = payload
+                tools = self.window.owner.studio_tools
+                tools.clip = {
+                    "raw": raw, "output": output, "rate": 48000,
+                    "settings": settings,
+                }
+                tools.results.clear()
+                tools.record_state = "AMD kısa ses testi hazır. ▶ Dinle ile sonucu duyabilirsin."
+                tools.ab_state = "Yeni AMD kaydı hazır; A/B ayarlarını kaydet."
+                self._status("AMD ses testi dönüştürüldü.")
+                if resume and not self._closing.is_set():
+                    self.start()
+            elif kind == "test_error":
+                self.window.owner.studio_tools.record_state = "AMD ses testi hatası: " + payload
+                self._status("AMD ses testi hatası: " + payload)
+            elif kind == "record_warning":
+                self._status("AMD mikrofon kaydı: " + payload)
+        if self._ab_resume and not self.window.owner.studio_tools.busy:
+            self._ab_resume = False
+            self.start()
         if self.bridge.process and not self.bridge.running and not self.bridge._stop_requested:
             code = self.bridge.process.poll()
             if code != self._recent_error:
@@ -472,6 +500,7 @@ def install(window_class):
     old_shutdown = window_class.shutdown
     old_tick = getattr(window_class, "_studio_tick", None)
     old_import = getattr(window_class, "_import_database_model", None)
+    old_studio_event = getattr(window_class, "_studio_event", None)
 
     @wraps(old_init)
     def init(self, *args, **kwargs):
@@ -545,6 +574,37 @@ def install(window_class):
                     edition.convert_model(models[0])
             return result
         window_class._import_database_model = import_model
+
+    if old_studio_event is not None:
+        @wraps(old_studio_event)
+        def studio_event(self, event, *args, **kwargs):
+            edition = getattr(self, "_amd_edition", None)
+            if edition is not None:
+                if event == "studio_record":
+                    self.owner.studio_tools.amd_record(
+                        float(self.widgets["studio_seconds"].get()), self._values()
+                    )
+                    return
+                if event == "studio_clear_cache":
+                    active = edition.bridge.running
+                    edition.stop()
+                    if active:
+                        from PySide6.QtCore import QTimer
+                        QTimer.singleShot(350, edition.start)
+                    self.clear_cache_status.setText(
+                        "AMD ses tamponu Rust motorunu yeniden başlatarak sıfırlandı."
+                    )
+                    return
+                if event == "studio_mute":
+                    tools = self.owner.studio_tools
+                    tools.muted = not tools.muted
+                    if edition.bridge.running:
+                        edition.stop()
+                        from PySide6.QtCore import QTimer
+                        QTimer.singleShot(350, edition.start)
+                    return
+            return old_studio_event(self, event, *args, **kwargs)
+        window_class._studio_event = studio_event
 
     window_class.__init__ = init
     window_class.read = read
