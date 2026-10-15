@@ -21,6 +21,15 @@ class FakePanel:
     def close(self):
         self.closed = True
 
+    def is_current(self):
+        return False
+
+    def start(self):
+        self.bridge.running = True
+
+    def stop(self):
+        self.bridge.running = False
+
     def error(self, message):
         self.blocked.append(message)
 
@@ -61,9 +70,11 @@ class CompatibilityTests(unittest.TestCase):
             ext.install(CompatibleWindow)
             window = CompatibleWindow(None, {})
             window._amd_vcrs_panel.bridge.running = True
+            window._events.append("after-stop")
             event, _ = window.read()
-            self.assertEqual(event, "stop_vc")
+            self.assertEqual(event, "after-stop")
             self.assertEqual(len(window._amd_vcrs_panel.blocked), 1)
+            self.assertFalse(window._amd_vcrs_panel.bridge.running)
 
     def test_extension_failure_does_not_crash_stock_window(self):
         with patch.object(ext, "AmdPanel", side_effect=RuntimeError("Qt module missing")):
