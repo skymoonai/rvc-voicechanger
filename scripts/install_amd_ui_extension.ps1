@@ -54,7 +54,14 @@ if ($old.Contains($hookStart)) {
     Write-Host 'AMD hook is already installed. Updating only AMD extension modules.'
 }
 
-$required = @('rvc_amd_bridge.py', 'rvc_amd_extension.py')
+$required = @(
+    'rvc_amd_bridge.py',
+    'rvc_amd_extension.py',
+    'rvc_amd_assets.py',
+    'rvc_amd_devices.py',
+    'rvc_amd_convert.py',
+    'rvc_amd_metrics.py'
+)
 foreach ($file in $required) {
     if (!(Test-Path -LiteralPath (Join-Path (Join-Path $SourceRoot 'tools') $file))) {
         throw "AMD extension source missing: $file. Download the full feature/amd-vcrs-preview ZIP."
@@ -94,6 +101,22 @@ except Exception as _amd_extension_error:
 '@
         [IO.File]::WriteAllText($ui, ($old.TrimEnd([char[]]@(13, 10)) + "`r`n" + $hook + "`r`n"), $utf8)
     }
+    # Optional pre-built pure-Rust PTH converter from the pinned upstream
+    # vc-convert source. No external vc-rs GUI is launched by this converter.
+    $nativeSource = Join-Path $SourceRoot 'tools/bin/rvcstudio-convert.exe'
+    $engine = Join-Path $Target 'engines/vc-rs'
+    if (Test-Path -LiteralPath $nativeSource) {
+        New-Item -ItemType Directory -Path $engine -Force | Out-Null
+        $nativeTarget = Join-Path $engine 'rvcstudio-convert.exe'
+        if (Test-Path -LiteralPath $nativeTarget) {
+            Copy-Item -LiteralPath $nativeTarget -Destination (Join-Path $backup 'rvcstudio-convert.exe') -Force
+        }
+        Copy-Item -LiteralPath $nativeSource -Destination $nativeTarget -Force
+        Write-Host 'PTH -> ONNX native Rust converter installed.'
+    }
+    else {
+        Write-Warning 'The native converter binary is missing from the ZIP. Other AMD features will work; PTH conversion requires downloading the latest AMD branch ZIP with tools/bin/rvcstudio-convert.exe.'
+    }
     # Parse, do not import or execute the application in this step.
     $python = Join-Path $Target '.venv\Scripts\python.exe'
     if (!(Test-Path -LiteralPath $python)) { $python = 'python' }
@@ -105,7 +128,7 @@ for file in sys.argv[1:]:
     ast.parse(pathlib.Path(file).read_text(encoding="utf-8-sig"), filename=file)
 print("AMD extension: syntax OK")
 '@
-    $check | & $python - $ui (Join-Path $tools 'rvc_amd_extension.py') (Join-Path $tools 'rvc_amd_bridge.py')
+    $check | & $python - $ui @($required | ForEach-Object { Join-Path $tools $_ })
     if ($LASTEXITCODE -ne 0) { throw "Python AST validation failed; restoring original UI." }
     Write-Host "AMD extension installed into RVC Studio $version"
     Write-Host "Backup: $backup"
@@ -119,6 +142,13 @@ catch {
         $p = Join-Path $tools $file
         if ($originalModules[$file]) { Copy-Item -LiteralPath $original -Destination $p -Force }
         elseif (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Force }
+    }
+    $native = Join-Path $Target 'engines/vc-rs/rvcstudio-convert.exe'
+    $originalNative = Join-Path $backup 'rvcstudio-convert.exe'
+    if (Test-Path $originalNative) {
+        Copy-Item -LiteralPath $originalNative -Destination $native -Force
+    } elseif (Test-Path $native -PathType Leaf) {
+        Remove-Item -LiteralPath $native -Force
     }
     throw
 }
