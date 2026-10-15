@@ -169,7 +169,8 @@ def array_convert(edition, raw, rate: int, settings: dict):
 def install_studio_tests(studio_tools, edition):
     """Replace only the RVC render function, leave saved A/B snapshots intact."""
     def render(self, raw, input_rate, settings):
-        return array_convert(edition, raw, input_rate, settings)
+        rendered = array_convert(edition, raw, input_rate, settings)
+        return {"audio": rendered, "rate": input_rate, "settings": settings}
     studio_tools._render = MethodType(render, studio_tools)
     old_compare = studio_tools.compare
 
