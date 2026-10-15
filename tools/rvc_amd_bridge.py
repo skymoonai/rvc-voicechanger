@@ -106,7 +106,7 @@ def load_preferences() -> dict:
 def save_preferences(data: dict) -> None:
     """Only store user-controlled model paths/settings, never raw audio."""
     SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    allowed = ("model", "embedder", "f0", "input", "output", "provider", "chunk_ms")
+    allowed = ("model", "embedder", "f0", "input", "output", "provider", "chunk_ms", "pitch")
     payload = {key: str(data.get(key, "")) for key in allowed}
     temporary = SETTINGS_FILE.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -133,11 +133,17 @@ class VcRsBridge:
         with self._lock:
             self._messages.append(message)
         if message:
-            print("[AMD] " + message, flush=True)
+            try:
+                print("[AMD] " + message, flush=True)
+            except UnicodeEncodeError:
+                # Fresh Windows VMs often default to a legacy console codepage.
+                encoding = getattr(sys.stdout, "encoding", None) or "ascii"
+                safe = ("[AMD] " + message).encode(encoding, errors="replace").decode(encoding)
+                print(safe, flush=True)
 
     def _parse_metrics(self, message: str) -> None:
         def take(key):
-            match = re.search(r"(?<!\\w)" + re.escape(key) + r"=([0-9.]+)", message)
+            match = re.search(r"(?<!\w)" + re.escape(key) + r"=([0-9.]+)", message)
             return float(match.group(1)) if match else None
         inference = take("infer")
         processing = take("processing")
