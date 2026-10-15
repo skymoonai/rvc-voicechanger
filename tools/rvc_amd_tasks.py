@@ -179,3 +179,66 @@ def install_studio_tests(studio_tools, edition):
             edition.stop()
         return old_compare()
     studio_tools.compare = compare
+
+def install_capture(studio_tools, edition):
+    """Capture actual mic input for short tests without a Python RVC stream.
+
+    Converted test is created by Rust 'vc-rs wav'; this source capture is NOT
+    taken from the legacy muted Python callback.
+    """
+    def toggle(seconds, settings):
+        if getattr(edition, "_recording", False):
+            edition._capture_stop.set()
+            return
+        if not edition.bridge.running:
+            studio_tools.record_state = "Önce AMD ses dönüşümünü başlat."
+            return
+        if not edition._assets_ready:
+            studio_tools.record_state = "Önce ContentVec/RMVPE hazırlansın."
+            return
+        seconds = max(1, min(30, float(seconds)))
+        edition._capture_stop = threading.Event()
+        edition._recording = True
+        studio_tools.record_state = "AMD test kaydı alınıyor…"
+        studio_tools.results = {}
+        studio_tools.clip = None
+
+        def work():
+            import sounddevice as sd
+            import numpy as np
+            chunks = []
+            try:
+                device_name = str(edition.read_value("sg_input_device", "") or "")
+                devices = sd.query_devices()
+                options = [i for i, item in enumerate(devices)
+                           if item["max_input_channels"] > 0 and
+                           str(item["name"]).casefold() == device_name.casefold()]
+                chosen = options[0] if len(options) == 1 else None
+                with sd.InputStream(device=chosen, samplerate=48000, channels=1,
+                                    dtype="float32", blocksize=1024, latency="low") as stream:
+                    total = 0
+                    limit = int(seconds * 48000)
+                    while total < limit and not edition._capture_stop.is_set():
+                        block, overrun = stream.read(min(1024, limit - total))
+                        if overrun:
+                            edition._queue.put(("record_warning", "Kayıtta mikrofon tamponu taştı."))
+                        chunks.append(block[:, 0].copy())
+                        total += len(block)
+                if total < 4800:
+                    raise RuntimeError("Kayıt çok kısa.")
+                raw = np.concatenate(chunks).astype(np.float32, copy=False)
+                # Model conversion competes with a live Rust stream on GPU.
+                # Stop it; do not restart until output conversion completes.
+                resume = edition.bridge.running
+                if resume:
+                    edition.bridge.stop()
+                settings = dict(settings)
+                output = array_convert(edition, raw, 48000, settings)
+                edition._queue.put(("test_done", (raw, output, settings, resume)))
+            except Exception as exc:
+                edition._queue.put(("test_error", str(exc)))
+            finally:
+                edition._recording = False
+        edition._async(work, "test_capture")
+
+    studio_tools.amd_record = toggle
