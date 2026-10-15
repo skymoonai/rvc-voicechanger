@@ -31,6 +31,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install PySide6 for offscreen AMD interface smoke test
+        run: python -m pip install --disable-pip-version-check "PySide6>=6.7,<7"
       - name: Compile changed modules
         run: python -m compileall -q tools/rvc_amd_bridge.py tools/rvc_amd_extension.py tools/rvc_amd_assets.py tools/rvc_amd_devices.py tools/rvc_amd_convert.py tools/rvc_amd_metrics.py tools/rvc_modern_qt.py
       - name: Run sidecar unit tests
