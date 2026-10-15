@@ -13,6 +13,8 @@ import logging
 from tools.cuda_graph import configure_cuda_graph
 
 logger = logging.getLogger(__name__)
+# ROCm PyTorch exposes AMD GPUs through the torch.cuda API, too.
+ROCM_BUILD = bool(getattr(torch.version, 'hip', None))
 
 
 # Keep device/precision eligibility in one place.  This follows the GPU rules
@@ -25,7 +27,7 @@ def get_device_dtype_sm(idx) :
 
     try:
         cuda = torch.device(f"cuda:{idx}")
-        major, minor = torch.cuda.get_device_capability(idx)
+        major, minor = (0, 0) if ROCM_BUILD else torch.cuda.get_device_capability(idx)
         gpu_name = torch.cuda.get_device_name(idx)
         mem_bytes = torch.cuda.get_device_properties(idx).total_memory
     except Exception:
@@ -33,6 +35,19 @@ def get_device_dtype_sm(idx) :
         return cpu, torch.float32, 0.0, 0.0
 
     mem_gb = mem_bytes / (1024**3) + 0.4
+    if ROCM_BUILD:
+        # Do not apply NVIDIA SM/GTX dtype rules to an AMD ROCm adapter.
+        # Start conservatively with fp32; enable fp16 only after RVC model tests.
+        if mem_gb < 4:
+            return cpu, torch.float32, 0.0, 0.0
+        try:
+            probe = torch.ones(1, device=cuda, dtype=torch.float32)
+            if float((probe + 1).cpu()[0]) != 2.0:
+                raise RuntimeError('ROCm GPU probe returned an invalid result')
+        except Exception:
+            logger.exception('AMD ROCm GPU %s cannot run a basic inference probe', idx)
+            return cpu, torch.float32, 0.0, 0.0
+        return cuda, torch.float32, 0.0, mem_gb
     sm_version = major + minor / 10.0
     is_16_series = bool(re.search(r"16\d{2}", gpu_name)) and sm_version == 7.5
     if mem_gb < 4 or sm_version < 5.3:
@@ -131,7 +146,10 @@ if infer_device.type != "cuda":
 # Run a real capture/replay probe on the selected inference device.  Both
 # application entry points import this module, so downstream inference code
 # receives one consistent 0/1 switch without duplicating device checks.
-CUDA_GRAPH_AVAILABLE = configure_cuda_graph(infer_device)
+if ROCM_BUILD:
+    # CUDA Graph support cannot be assumed on Windows ROCm PyTorch wheels.
+    os.environ['RVC_CUDA_GRAPH'] = '0'
+CUDA_GRAPH_AVAILABLE = False if ROCM_BUILD else configure_cuda_graph(infer_device)
 
 
 CONFIGS_DIR = Path(__file__).resolve().parent
@@ -227,14 +245,18 @@ class Config:
             self.is_half = infer_dtype == torch.float16
             self.gpu_name = torch.cuda.get_device_name(i_device)
             self.gpu_mem = int(infer_gpu_mem)
-            logger.info(
-                "Selected GPU %s (%s, SM %.1f, %.1f GiB)",
-                i_device,
-                self.gpu_name,
-                torch.cuda.get_device_capability(i_device)[0]
-                + torch.cuda.get_device_capability(i_device)[1] / 10.0,
-                infer_gpu_mem,
-            )
+            if ROCM_BUILD:
+                logger.info("Selected AMD ROCm GPU %s (%s, %.1f GiB)",
+                            i_device, self.gpu_name, infer_gpu_mem)
+            else:
+                logger.info(
+                    "Selected NVIDIA GPU %s (%s, SM %.1f, %.1f GiB)",
+                    i_device,
+                    self.gpu_name,
+                    torch.cuda.get_device_capability(i_device)[0]
+                    + torch.cuda.get_device_capability(i_device)[1] / 10.0,
+                    infer_gpu_mem,
+                )
             if not self.is_half:
                 logger.info("GPU rule selected fp32 for %s", self.gpu_name)
                 self.preprocess_per = 3.0
