@@ -55,6 +55,8 @@ class AmdEdition:
         self._input_names = []
         self._output_names = []
         self._last_start = 0
+        self._restart_serial = 0
+        self._restart_pending = False
         self._QLabel = QLabel
 
         self.monitor = ConvertedVoiceMonitor(self._status)
@@ -162,6 +164,7 @@ class AmdEdition:
         self.chunk.valueChanged.connect(
             lambda value: self.chunk_caption.setText(f"Parça / Chunk: {value * 10} ms")
         )
+        self.chunk.valueChanged.connect(self.schedule_restart)
         if chunk_row is not None:
             chunk_row.addWidget(self.chunk_caption)
             chunk_row.addWidget(self.chunk)
@@ -194,6 +197,8 @@ class AmdEdition:
     def _configure_quality_page(self):
         noise = getattr(self.window, "noise_panel", None)
         if noise is not None:
+            if hasattr(noise, "enabled"):
+                noise.enabled.toggled.connect(self.schedule_restart)
             # Native vc-rs RNNoise works in Rust, not through old Python
             # NoiseFilter callbacks. Strength is not exposed by Rust CLI.
             for key in ("strength", "gate", "threshold", "hold"):
@@ -430,6 +435,31 @@ class AmdEdition:
             from PySide6.QtCore import QTimer
             QTimer.singleShot(350, self.start)
 
+    def schedule_restart(self, *_args):
+        """CLI flags are process settings; update via a debounced restart."""
+        if not self.bridge.running and not self._restart_pending:
+            return
+        from PySide6.QtCore import QTimer
+        self._restart_serial += 1
+        token = self._restart_serial
+        if self.bridge.running:
+            self.monitor.stop()
+            self.bridge.stop()
+        self._restart_pending = True
+
+        def settle(attempt=0):
+            if token != self._restart_serial or self._closing.is_set():
+                return
+            if self.bridge.running and attempt < 12:
+                QTimer.singleShot(150, lambda: settle(attempt+1))
+                return
+            self._restart_pending = False
+            if self.bridge.running:
+                self._status("Ayar değişikliği bekliyor: Rust motoru kapanamadı.")
+                return
+            self.start()
+        QTimer.singleShot(450, settle)
+
     def sync_monitor(self, *_args):
         if not self.bridge.running:
             self.monitor.stop()
@@ -588,6 +618,11 @@ def install(window_class):
                 continue
             if event == "reload_devices":
                 edition.refresh_devices()
+                continue
+            if event in ("sg_input_device", "sg_output_device", "pitch",
+                         "rms_mix_rate", "threhold"):
+                if not edition._listing:
+                    edition.schedule_restart()
                 continue
             if event == "profile_add":
                 edition.add_portable_profile()
