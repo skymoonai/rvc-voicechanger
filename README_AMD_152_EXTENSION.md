@@ -1,73 +1,102 @@
-# RVC Studio 1.5.2 Beta 1 — AMD Motoru eklentisi
+# RVC Studio 1.5.2 — AMD Motoru (Rust / DirectML) v2
 
-**Bu, v1.5.2'nin kendi PySide6 arayüzünü kullanan deneysel entegrasyondur.**
-`tools/rvc_modern_qt.py` dosyasını AMD geliştirme dalından KOPYALAMAYIN.
-Bu dalın ana kaynak ağacı 1.3 tabanlıdır; 1.5.2'nin güncel arayüz
-kaynakları GitHub deposunda yayımlanmamıştır. Eski dosyayı kopyalamak,
-`'Window' object has no attribute 'tray'` hatasına yol açar.
+Bu eklenti, kurulu **RVC Studio 1.5.2** arayüzünün üzerine çalışır.
+**ÖNEMLİ:** Geliştirme dalındaki `tools/rvc_modern_qt.py` dosyasını
+kurulu programa kopyalamayın. Sistem tepsisi (`tray`) hatasına yol açar.
+Güncel `install_amd_ui_extension.ps1` sadece arayüzü destekleyen küçük
+bir bağlantı ekler, önce yedek alır, hatada geri döner.
 
-## Kurulum
+## Neler eklendi?
 
-1. 1.5.2 kurucusunu tekrar `C:\RVCStudio` konumuna yükleyerek orijinal
-   arayüzü geri getirin. Önce kişisel modelleri/profilleri yedekleyin.
-2. [AMD geliştirme dalını](https://github.com/skymoonai/rvc-voicechanger/tree/feature/amd-vcrs-preview)
-   GitHub'da **Code → Download ZIP** ile indirin ve örnek olarak
-   `%USERPROFILE%\Downloads\rvc-voicechanger-feature-amd-vcrs-preview`
-   klasörüne çıkartın.
-3. Windows PowerShell'de **aşağıdaki kodu**, çıkartma yolunuz farklıysa
-   `$source` değişkenini düzenleyerek çalıştırın:
+- Normal RVC Studio'nun kartlı koyu temasıyla **AMD Ses Dönüşümü** sayfası.
+- **PTH seçildiğinde**, vc-rs'nin MIT lisanslı saf Rust dönüştürücüsü
+  `rvcstudio-convert.exe` aracılığıyla uygulama içinde, arka planda,
+  başka GUI açılmadan ONNX'e dönüşüm. Destek: yalnızca RVC v2 / F0;
+  mevcut ONNX asla zorla üzerine yazılmaz.
+- **ContentVec ve RMVPE** için açılışta otomatik indirme; yaklaşık **741 MB**,
+  Hugging Face `wok000/weights_gpl` GPL-3.0 ağırlıkları.
+  Dosyalar `%LOCALAPPDATA%\RVCStudio\engines\vc-rs\models` altında
+  tutulur. Gerçek SHA-256 ve dosya boyutu ile doğrulanır.
+  Kullanıcının önceki vc-rs GUI indirmeleri doğrulanarak yeniden kullanılır.
+  İnternet yoksa yeniden dene düğmesi vardır.
+- **WASAPI giriş/çıkış cihazları açılır listeden** seçilir. Mevcut
+  RVC Studio `Giriş ve Çıkış` ayarlarının isimleri eşleştiğinde
+  AMD seçimi de takip edilir.
+- **Chunk 50–1000 ms kaydırıcı** (10 ms basamaklarla uygulanır) ve
+  pitch kaydırıcı.
+- AMD sekmesindeyken RVC Studio'nun ana başlat/durdur komutları
+  AMD motoruna yönlendirilir; iki canlı ses motoru aynı anda açılamaz.
+- **Günlük:** vc-rs satırları RVC Studio'nun ortak Günlük sekmesine
+  aktarılır; AMD ekranında ayrı konsol kutusu yoktur.
+- **Alt gösterge paneli:** vc-rs'nin saniyelik gerçek model çıkarım
+  ölçümü (çıkarım/ms), *nominal* içerik gecikmesi (yaklaşık ~ms),
+  GPU Engine performans sayacıyla vc-rs subprocess GPU% (destekleniyorsa).
+  **Örnekleme** değeri vc-rs CLI tarafından dışarı verilmediği için
+  şimdilik `—` gösterilir; değer uydurulmaz.
 
-```powershell
-$source = "$env:USERPROFILE\Downloads\rvc-voicechanger-feature-amd-vcrs-preview"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$source\scripts\install_amd_ui_extension.ps1" -Target "C:\RVCStudio" -SourceRoot $source
-```
+### Kurulum — tek PowerShell bloğu
 
-Eklenti kurucusu sadece şu değişiklikleri yapar:
+Önceden `tray` hatası aldıysanız, **önce resmi 1.5.2 Setup.exe'yi
+`C:\RVCStudio` konumuna yeniden yükleyin**. Kullanıcı modellerini ve
+profillerini yedekleyin. Mevcut `vc-rs` motoru kurulu kalabilir.
 
-- Mevcut `tools/rvc_modern_qt.py` için, kullanıcı AppData klasörüne yedek alır.
-- `tools/rvc_amd_bridge.py` ve `tools/rvc_amd_extension.py` dosyalarını
-  kopyalar.
-- Orijinal arayüzün **sonuna** güvenli yükleme bloğu ekler. Tray, ses
-  callback'i, update akışı ve diğer orijinal metodlar değişmez.
-- Python kodunun sözdizimini kontrol eder, başarısızsa otomatik geri alır.
-- **1.5.2** sürüm denetimi ve tray önkontrolü yapar. Sürüm uyuşmazlığında
-  değişiklik yapmaz.
-
-4. Rust motoru `C:\RVCStudio\engines\vc-rs\vc-rs.exe` altında mevcut olmalı.
-   Yoksa `scripts/install_vcrs_amd.ps1` ile yeniden kurun.
-5. RVC Studio'yu açın, **AMD Motoru** sekmesini seçin; RVC v2/F0 ONNX
-   modelini, ContentVec/RMVPE ONNX destek modellerini, WASAPI giriş/çıkışını
-   ve **DirectML** sağlayıcısını seçin. İlk deneme için **200 veya 500 ms**.
-6. Ana Python ses akışı duruyorken **AMD Ses Motorunu Başlat** düğmesini kullanın.
-
-**Sınırlamalar:** Bu prototip, AMD için Rust motorunu farklı bir WASAPI
-işleminde çalıştırır. INDEX, Soundpad çıkış yönlendirmesi, formant,
-A/B, RVC Studio içi canlı seviye monitörü ve canlı ayar değiştirme henüz
-bağlı değildir. Sanal makinede gerçek AMD GPU çıkarımı doğrulanmalıdır.
-
-## Geri alma
+Ardından Windows PowerShell'e yalnızca aşağıdaki kod bloğunun
+**içini** yapıştırın. `PS C:\...>` istemini veya çıktıları yapıştırmayın.
 
 ```powershell
-$source = "$env:USERPROFILE\Downloads\rvc-voicechanger-feature-amd-vcrs-preview"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$source\scripts\install_amd_ui_extension.ps1" -Target "C:\RVCStudio" -Remove
+$ErrorActionPreference = 'Stop'
+$zip = Join-Path $env:TEMP 'rvcstudio-amd-v2.zip'
+$folder = Join-Path $env:TEMP 'rvcstudio-amd-v2'
+if (Test-Path $folder) { Remove-Item -Recurse -Force $folder }
+Invoke-WebRequest -Uri 'https://github.com/skymoonai/rvc-voicechanger/archive/refs/heads/feature/amd-vcrs-preview.zip' -OutFile $zip -UseBasicParsing
+Expand-Archive -LiteralPath $zip -DestinationPath $folder -Force
+$installer = Get-ChildItem $folder -Recurse -Filter 'install_amd_ui_extension.ps1' | Select-Object -First 1
+if (!$installer) { throw 'AMD kurulum dosyası ZIP içinde bulunamadı.' }
+$source = Split-Path (Split-Path $installer.FullName -Parent) -Parent
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$($installer.FullName)" -Target 'C:\RVCStudio' -SourceRoot "$source"
 ```
 
-Bu komut yalnızca AMD başlangıç bağlantısını kaldırır; orijinal arayüzü
-başka bir sürümle değiştirmez. AMD Rust ikililerini silmez.
+Kurulum otomatik olarak:
+- Dosyaları yedekler, `tools/rvc_amd_*.py` modüllerini yerleştirir.
+- CI tarafından derlenmiş ve **SHA-256 ile doğrulanmış** Rust PTH
+  dönüştürücüsünü `C:\RVCStudio\engines\vc-rs` altına koyar.
+- Orijinal 1.5.2 `Window` ve `tray` kodunu korur.
+- Değişikliklerden sonra Python sözdizimini kontrol eder.
 
-## Geliştirici notları
+**Motorun kendisi** (`vc-rs.exe`) hâlâ kurulu olmalıdır.
+Gerekiyorsa şu komutla kurun:
 
-- Windows UI açıldıktan sonra `install(Window)`, orijinal
-  `Window.__init__` / `read` / `shutdown` metodlarını sarmalar.
-  Orijinal kurucunun çalışması ve sistem tepsisinin oluşturulması önce
-  tamamlanır. AMD eklentisi yüklenemezse stok pencere çalışmaya devam eder.
-- `Window.read`, AMD aktifken normal RVC başlatma isteğini reddeder.
-  AMD başlangıç düğmesi de stok stream aktifken motor başlatmayı reddeder.
-- CI: sahte bir 1.5.2 pencere üzerinde ekleme, yedekleme,
-  tekrar kurma ve kaldırma; ayrıca Window.tray koruma ve bağımsız
-  subprocess mantığı test edilir.
-- **Sınır:** GitHub deposunda 1.5.2'nin birebir UI kaynakları olmadığı
-  için gerçek 1.5.2 kurucusuyla tam uygulama testi yapılamadı. Kurulum betiği
-  sürüm önkontrolünü geçmezse **zorlamayın**; yüklü
-  `tools/rvc_user_state.py` içindeki `APP_VERSION` değerini ve
-  `tools/rvc_modern_qt.py` dosyasında tray olup olmadığını kontrol edin.
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'C:\RVCStudio\scripts\install_vcrs_amd.ps1' -Destination 'C:\RVCStudio\engines\vc-rs'
+```
+
+Kurulumdan sonra RVC Studio'yu açın. AMD sekmesindeki ilk indirme
+tamamlanınca `Model seç` butonuyla `.pth` veya `.onnx` seçin.
+Sanal makinede ses giriş/çıkışının gerçekten mevcut olması gerekir.
+Chunk 200 ms'den başlayın; kesinti varsa 250–500 ms'ye yükseltin.
+
+### Geri alma
+
+Yukarıdaki kurulumdan sonra temp içeriği duruyorsa:
+
+```powershell
+$folder = Join-Path $env:TEMP 'rvcstudio-amd-v2'
+$installer = Get-ChildItem $folder -Recurse -Filter install_amd_ui_extension.ps1 | Select-Object -First 1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$($installer.FullName)" -Target 'C:\RVCStudio' -Remove
+```
+
+Bu işlem AMD arayüz bağlantısını kaldırır; ses modeli ağırlıklarını
+ve Rust çalışma zamanını silmez.
+
+### Bilinen sınırlar
+
+**1.5.2'nin kurucudaki gerçek koduyla Windows uygulama testine henüz
+erişilemedi.** CI: Python derlemesi, PS parser, sahte 1.5.2 arayüzü,
+kurma/çıkarma, Rust CLI kontrolü ve küçük v2/F0 checkpoint dönüşümünü sınar.
+Kullanıcı testiyle gerçek uygulama davranışı netleştirilmeli.
+
+AMD motoru ayrı WASAPI işlemidir. Soundpad işleme, `.index` eşleştirmesi,
+formant, ana uygulamanın canlı ses metreleri ve RVC profil eşitlemesi henüz
+AMD motoruna bağlanmadı. Rust'un raporladığı `content_delay_ms` gerçek
+mikrofondan kulaklığa gecikme değildir. AppSandbox GPU-PV'de AMD hızlandırması
+ayrıca doğrulanmalıdır.
