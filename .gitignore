@@ -222,6 +222,7 @@ __marimo__/
 # RVC Studio source exclusions
 
 # RVC Studio local environments and user data
+.venv-rocm/
 .venv/
 venv/
 __pycache__/
