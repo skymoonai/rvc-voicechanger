@@ -429,11 +429,8 @@ class AmdEdition:
             return
         self._passthrough = enabled
         if self.bridge.running:
-            self.stop()
             self._status("Mikrofon modu değişti; Rust motoru yeniden başlatılıyor.")
-            # vc-rs CLI does not expose a mutable per-frame passthrough flag.
-            from PySide6.QtCore import QTimer
-            QTimer.singleShot(350, self.start)
+            self.schedule_restart()
 
     def schedule_restart(self, *_args):
         """CLI flags are process settings; update via a debounced restart."""
@@ -707,22 +704,18 @@ def install(window_class):
                     )
                     return
                 if event == "studio_clear_cache":
-                    active = edition.bridge.running
-                    edition.stop()
-                    if active:
-                        from PySide6.QtCore import QTimer
-                        QTimer.singleShot(350, edition.start)
-                    self.clear_cache_status.setText(
-                        "AMD ses tamponu Rust motorunu yeniden başlatarak sıfırlandı."
-                    )
+                    if edition.bridge.running:
+                        edition.schedule_restart()
+                        text = "AMD tampon sıfırlanıyor · ses motoru yeniden başlatılıyor."
+                    else:
+                        text = "AMD motoru duruyor; temizlenecek aktif tampon yok."
+                    self.clear_cache_status.setText(text)
                     return
                 if event == "studio_mute":
                     tools = self.owner.studio_tools
                     tools.muted = not tools.muted
                     if edition.bridge.running:
-                        edition.stop()
-                        from PySide6.QtCore import QTimer
-                        QTimer.singleShot(350, edition.start)
+                        edition.schedule_restart()
                     return
             return old_studio_event(self, event, *args, **kwargs)
         window_class._studio_event = studio_event
