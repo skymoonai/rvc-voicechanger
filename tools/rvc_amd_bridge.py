@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -71,6 +72,10 @@ def resolve_support_model(value: str, filename: str) -> Path:
             return candidate.resolve()
         raise VcRsError(filename + " bulunamadı: " + str(candidate))
     home = find_executable().parent
+    from tools.rvc_amd_assets import BASE, MODELS, verified
+    preferred = BASE / filename
+    if filename in MODELS and verified(preferred, MODELS[filename]):
+        return preferred.resolve()
     roots = (home / "assets", home, ROOT / "assets" / "vcrs")
     for folder in roots:
         candidate = folder / filename
@@ -117,10 +122,36 @@ class VcRsBridge:
         self._messages = deque(maxlen=100)
         self._lock = threading.Lock()
         self._stop_requested = False
+        self.metrics = {"infer_ms": None, "processing_ms": None, "content_delay_ms": None}
+        self._metrics_lock = threading.Lock()
 
     def _log(self, line: str) -> None:
+        message = line.rstrip()[:1200]
+        if "infer=" in message and "content_delay_ms=" in message:
+            self._parse_metrics(message)
+            return
         with self._lock:
-            self._messages.append(line.rstrip()[:1200])
+            self._messages.append(message)
+        if message:
+            print("[AMD] " + message, flush=True)
+
+    def _parse_metrics(self, message: str) -> None:
+        def take(key):
+            match = re.search(r"(?<!\\w)" + re.escape(key) + r"=([0-9.]+)", message)
+            return float(match.group(1)) if match else None
+        inference = take("infer")
+        processing = take("processing")
+        delay = take("content_delay_ms")
+        with self._metrics_lock:
+            self.metrics = {
+                "infer_ms": inference / 1000.0 if inference is not None else None,
+                "processing_ms": processing / 1000.0 if processing is not None else None,
+                "content_delay_ms": delay,
+            }
+
+    def snapshot_metrics(self) -> dict:
+        with self._metrics_lock:
+            return dict(self.metrics)
 
     def log_tail(self, lines: int = 12) -> str:
         with self._lock:
@@ -170,6 +201,8 @@ class VcRsBridge:
         if output_device.strip():
             cmd.extend(["--output", output_device.strip()])
         self._stop_requested = False
+        with self._metrics_lock:
+            self.metrics = {"infer_ms": None, "processing_ms": None, "content_delay_ms": None}
         self._log("Başlatılıyor: " + PROVIDERS[provider] + " / " + voice.name)
         try:
             self.process = subprocess.Popen(
@@ -177,6 +210,7 @@ class VcRsBridge:
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True, encoding="utf-8", errors="replace",
                 bufsize=1, creationflags=CREATION_FLAGS,
+                env=dict(os.environ, RUST_LOG="info"),
             )
         except (OSError, ValueError) as exc:
             self.process = None
