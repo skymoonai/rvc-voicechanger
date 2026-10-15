@@ -279,3 +279,6 @@ configs/session.json
 *.key
 *.secret
 
+
+# Downloaded vc-rs binaries / support models (not source)
+engines/vc-rs/

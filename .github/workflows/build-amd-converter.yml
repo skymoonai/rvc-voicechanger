@@ -1,0 +1,65 @@
+name: Build native PTH to ONNX converter (AMD preview)
+
+on:
+  push:
+    branches: [feature/amd-vcrs-preview]
+    paths:
+      - 'tools/rust/rvcstudio-convert.rs'
+      - '.github/workflows/build-amd-converter.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/checkout@v4
+        with:
+          repository: shirohata/vc-rs
+          ref: v0.5.3
+          path: _upstream_vcrs
+      - name: Prepare pinned upstream vc-convert executable
+        shell: pwsh
+        run: |
+          $destination = '_upstream_vcrs/crates/vc-convert/src/bin'
+          New-Item $destination -ItemType Directory -Force | Out-Null
+          Copy-Item 'tools/rust/rvcstudio-convert.rs' (Join-Path $destination 'rvcstudio-convert.rs')
+      - name: Build offline-capable Rust converter (vc-convert)
+        shell: pwsh
+        run: |
+          cargo build --manifest-path '_upstream_vcrs/Cargo.toml' -p vc-convert --release --bin rvcstudio-convert
+          $exe = '_upstream_vcrs/target/release/rvcstudio-convert.exe'
+          if (!(Test-Path $exe)) { throw 'Converter binary not found after build' }
+          New-Item 'tools/bin' -ItemType Directory -Force | Out-Null
+          Copy-Item $exe 'tools/bin/rvcstudio-convert.exe' -Force
+          Get-FileHash 'tools/bin/rvcstudio-convert.exe' -Algorithm SHA256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rvcstudio-convert-vcrs-v0.5.3-win-x64
+          path: tools/bin/rvcstudio-convert.exe
+          if-no-files-found: error
+      - name: Commit converter to experimental branch for opt-in installer ZIP
+        shell: pwsh
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/bin/rvcstudio-convert.exe
+          if (git diff --cached --quiet) {
+            Write-Host 'Binary unchanged.'
+            exit 0
+          }
+          git commit -m 'Bundle pinned MIT vc-convert helper on experimental AMD branch [skip ci]'
+          # Other integration commits may land during a long Rust build.
+          # Rebase the binary-only commit; never force-push over user changes.
+          git fetch origin feature/amd-vcrs-preview
+          if ($LASTEXITCODE -ne 0) { throw 'Could not fetch updated AMD branch' }
+          git rebase origin/feature/amd-vcrs-preview
+          if ($LASTEXITCODE -ne 0) { throw 'Could not rebase binary onto current branch' }
+          git push origin HEAD:feature/amd-vcrs-preview
+          if ($LASTEXITCODE -ne 0) { throw 'Could not push built converter' }

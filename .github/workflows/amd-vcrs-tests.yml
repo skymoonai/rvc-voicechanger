@@ -1,0 +1,141 @@
+name: AMD vc-rs preview checks
+on:
+  pull_request:
+    paths:
+      - "tools/rvc_amd_*.py"
+      - "tools/rvc_modern_qt.py"
+      - "tools/bin/**"
+      - "tools/rust/**"
+      - "tests/test_amd*.py"
+      - "scripts/install_vcrs_amd.ps1"
+      - "scripts/install_amd_ui_extension.ps1"
+      - ".github/workflows/amd-vcrs-tests.yml"
+  push:
+    branches:
+      - "feature/amd-vcrs-preview"
+    paths:
+      - "tools/rvc_amd_*.py"
+      - "tools/rvc_modern_qt.py"
+      - "tools/bin/**"
+      - "tools/rust/**"
+      - "tests/test_amd*.py"
+      - "scripts/install_vcrs_amd.ps1"
+      - "scripts/install_amd_ui_extension.ps1"
+      - ".github/workflows/amd-vcrs-tests.yml"
+
+jobs:
+  python-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PySide6 for offscreen AMD interface smoke test
+        run: python -m pip install --disable-pip-version-check "PySide6>=6.7,<7"
+      - name: Compile changed modules
+        run: python -m compileall -q tools/rvc_amd_bridge.py tools/rvc_amd_extension.py tools/rvc_amd_assets.py tools/rvc_amd_devices.py tools/rvc_amd_convert.py tools/rvc_amd_metrics.py tools/rvc_modern_qt.py
+      - name: Run sidecar unit tests
+        run: python -m unittest discover -s tests -p 'test_amd*.py' -v
+  powershell-parse:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse PowerShell installer
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD 'scripts/install_vcrs_amd.ps1'),
+            [ref]$tokens, [ref]$errors
+          ) | Out-Null
+          if ($errors) { $errors | Format-List; exit 1 }
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD 'scripts/install_amd_ui_extension.ps1'),
+            [ref]$tokens, [ref]$errors
+          ) | Out-Null
+          if ($errors) { $errors | Format-List; exit 1 }
+
+  upstream-vcrs-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and checksum-verify pinned vc-rs
+        shell: pwsh
+        run: |
+          # Test the default -File path too (previously failed with empty $PSScriptRoot).
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PWD 'scripts/install_vcrs_amd.ps1')
+          if ($LASTEXITCODE -ne 0) { throw 'Default installer invocation failed' }
+      - name: Verify bundled CLI recognizes options
+        shell: pwsh
+        run: |
+          $cli = Join-Path $PWD 'engines/vc-rs/vc-rs.exe'
+          if (!(Test-Path $cli)) { throw "vc-rs.exe is missing after install" }
+          $help = (& $cli run --help | Out-String)
+          if ($LASTEXITCODE -ne 0) { throw 'vc-rs run --help failed' }
+          foreach ($switch in @('--provider','--model','--embedder','--f0-model','--input','--output','--chunk-ms','--pitch-shift')) {
+            if (!$help.Contains($switch)) { throw "vc-rs missing expected option: $switch" }
+          }
+          Write-Host 'Pinned vc-rs CLI options verified.'
+      - uses: actions/checkout@v4
+        with:
+          repository: shirohata/vc-rs
+          ref: v0.5.3
+          path: _upstream_fixture
+      - name: Convert a real RVC v2 F0 test checkpoint inside the Rust helper
+        shell: pwsh
+        run: |
+          $tool = Join-Path $PWD 'tools/bin/rvcstudio-convert.exe'
+          if (!(Test-Path $tool)) { throw 'Native Rust PTH converter missing' }
+          $pth = Join-Path $env:RUNNER_TEMP 'tiny_v2_f0.pth'
+          Copy-Item '_upstream_fixture/crates/vc-convert/tests/fixtures/tiny_v2_f0.pth' $pth
+          & $tool $pth
+          if ($LASTEXITCODE -ne 0) { throw 'Native PTH->ONNX conversion failed' }
+          $onnx = [IO.Path]::ChangeExtension($pth, '.onnx')
+          if (!(Test-Path $onnx)) { throw 'ONNX output was not created' }
+          $size = (Get-Item $onnx).Length
+          if ($size -lt 10000) { throw "Output is unexpectedly short: $size" }
+          Write-Host "Native converter produced a $size byte ONNX model."
+
+  amd-extension-install-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test patch, idempotence, and clean uninstall without a real UI
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'studio152'
+          New-Item -ItemType Directory -Path (Join-Path $target 'tools') -Force | Out-Null
+          @'
+          APP_VERSION = '1.5.2-beta.1'
+          '@ | Set-Content -LiteralPath (Join-Path $target 'tools/rvc_user_state.py')
+          @'
+          class Window:
+              def __init__(self):
+                  self.tray = object()
+              def shutdown(self):
+                  pass
+              def read(self):
+                  return ('stop_vc', {})
+          '@ | Set-Content -LiteralPath (Join-Path $target 'tools/rvc_modern_qt.py')
+          $original = Get-Content (Join-Path $target 'tools/rvc_modern_qt.py') -Raw
+          & ./scripts/install_amd_ui_extension.ps1 -Target $target -SourceRoot $PWD
+          if (!(Test-Path (Join-Path $target 'tools/rvc_amd_extension.py'))) { throw 'Extension missing' }
+          $after = Get-Content (Join-Path $target 'tools/rvc_modern_qt.py') -Raw
+          if (!$after.Contains('RVC_STUDIO_AMD_EXTENSION_V2_BEGIN')) { throw 'Hook missing' }
+          if (!$after.Contains('self.tray = object()')) { throw 'Tray source was replaced' }
+          & ./scripts/install_amd_ui_extension.ps1 -Target $target -SourceRoot $PWD
+          $afterAgain = Get-Content (Join-Path $target 'tools/rvc_modern_qt.py') -Raw
+          $matches = [regex]::Matches($afterAgain, 'RVC_STUDIO_AMD_EXTENSION_V2_BEGIN')
+          if ($matches.Count -ne 1) { throw 'Hook was installed multiple times' }
+          & ./scripts/install_amd_ui_extension.ps1 -Target $target -Remove
+          $restored = Get-Content (Join-Path $target 'tools/rvc_modern_qt.py') -Raw
+          if ($restored.Contains('RVC_STUDIO_AMD_EXTENSION_V2_BEGIN')) { throw 'Uninstall failed' }
+          if (!$restored.Contains('self.tray = object()')) { throw 'Original tray lost' }
+          python -m py_compile (Join-Path $target 'tools/rvc_modern_qt.py')
