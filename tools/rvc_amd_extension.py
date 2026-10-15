@@ -40,6 +40,7 @@ class AmdPanel:
         self._closing = threading.Event()
         self._busy = False
         self._models_ready = False
+        self._support_paths = ("", "")
         self._pending_start = False
         self._QFileDialog = QFileDialog
         self._QMessageBox = QMessageBox
@@ -375,7 +376,7 @@ class AmdPanel:
         }
         try:
             self.bridge.start(
-                model=voice, embedder="", f0="",
+                model=voice, embedder=self._support_paths[0], f0=self._support_paths[1],
                 input_device=config["input"], output_device=config["output"],
                 provider=config["provider"], chunk_ms=chunk,
                 pitch=float(self.pitch.value()),
@@ -402,6 +403,7 @@ class AmdPanel:
                 self.progress.setValue(int(float(fraction) * 100))
             elif kind == "assets":
                 self._downloading = False
+                self._support_paths = tuple(str(path) for path in payload)
                 self._models_ready = True
                 self.assets_label.setText("✓ ContentVec ve RMVPE hazır")
                 self.progress.setValue(100)
