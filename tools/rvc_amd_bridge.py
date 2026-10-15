@@ -122,7 +122,7 @@ class VcRsBridge:
         self._messages = deque(maxlen=100)
         self._lock = threading.Lock()
         self._stop_requested = False
-        self.metrics = {"infer_ms": None, "processing_ms": None, "content_delay_ms": None}
+        self.metrics = {"infer_ms": None, "processing_ms": None, "content_delay_ms": None, "input_rms": None, "output_rms": None}
         self._metrics_lock = threading.Lock()
 
     def _log(self, line: str) -> None:
@@ -148,11 +148,14 @@ class VcRsBridge:
         inference = take("infer")
         processing = take("processing")
         delay = take("content_delay_ms")
+        in_rms = take("input_rms")
+        out_rms = take("output_rms")
         with self._metrics_lock:
             self.metrics = {
                 "infer_ms": inference / 1000.0 if inference is not None else None,
                 "processing_ms": processing / 1000.0 if processing is not None else None,
                 "content_delay_ms": delay,
+                "input_rms": in_rms, "output_rms": out_rms,
             }
 
     def snapshot_metrics(self) -> dict:
