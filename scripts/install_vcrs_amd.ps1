@@ -2,9 +2,20 @@
 # Run from PowerShell. This does not alter Python/PyTorch or the NVIDIA install.
 [CmdletBinding()]
 param(
-    [string]$Destination = (Join-Path (Split-Path $PSScriptRoot -Parent) 'engines\vc-rs')
+    [string]$Destination = ''
 )
 $ErrorActionPreference = 'Stop'
+# PowerShell may not populate $PSScriptRoot when evaluating parameter defaults.
+# Resolve the destination only after entering the script, when $PSCommandPath
+# points to this file (independent of the caller's current working directory).
+if ([string]::IsNullOrWhiteSpace($Destination)) {
+    if ([string]::IsNullOrWhiteSpace($PSCommandPath)) {
+        throw 'Cannot determine installer location; please supply -Destination explicitly.'
+    }
+    $scriptFolder = Split-Path -Parent $PSCommandPath
+    $studioFolder = Split-Path -Parent $scriptFolder
+    $Destination = Join-Path $studioFolder 'engines\vc-rs'
+}
 $tag = 'v0.5.3'
 $name = "vc-rs-windowsml-$tag-win-x64.zip"
 $url = "https://github.com/shirohata/vc-rs/releases/download/$tag/$name"
