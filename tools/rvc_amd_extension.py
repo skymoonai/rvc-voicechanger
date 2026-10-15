@@ -9,6 +9,16 @@ from __future__ import annotations
 from functools import wraps
 import queue
 import threading
+import sys
+
+
+def _log_safely(message):
+    try:
+        print("[AMD] " + message, flush=True)
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "ascii"
+        text = ("[AMD] " + message).encode(encoding, "replace").decode(encoding)
+        print(text, flush=True)
 
 
 class AmdPanel:
@@ -217,7 +227,7 @@ class AmdPanel:
 
     def _say(self, message):
         self.status_label.setText(message)
-        print("[AMD] " + message, flush=True)
+        _log_safely(message)
 
     def error(self, message):
         self._say(str(message))
@@ -387,27 +397,33 @@ class AmdPanel:
         self.start_button.setEnabled(not self._busy and self._models_ready and not self.bridge.running)
         self.stop_button.setEnabled(self.bridge.running)
         if self.bridge.running:
-            metrics = self.bridge.snapshot_metrics()
-            gui = getattr(self.window, "widgets", {})
-            if isinstance(gui, dict):
-                for key, value in (
-                    ("infer_time", "—" if metrics["infer_ms"] is None
-                     else f"{metrics['infer_ms']:.0f}"),
-                    # Rust metric is *nominal model content delay*, not
-                    # microphone-to-speaker latency. The ~ marker is deliberate.
-                    ("delay_time", "—" if metrics["content_delay_ms"] is None
-                     else f"~{metrics['content_delay_ms']:.0f}"),
-                    ("gpu_usage", "—" if self._gpu.value is None
-                     else f"{self._gpu.value:.0f}"),
-                    ("sr_stream", "—"),
-                ):
-                    handle = gui.get(key)
-                    if handle is not None:
-                        try:
-                            handle.update(value)
-                        except Exception:
-                            pass
-            self.status_label.setText("AMD motoru çalışıyor · DirectML/Windows ML")
+            self.paint_stats()
+            self.status_label.setText("AMD motoru çalışıyor · " + self.provider.currentText())
+
+    def paint_stats(self):
+        """Refresh stock status badges using real Rust process measurements."""
+        if not self.bridge.running:
+            return
+        metrics = self.bridge.snapshot_metrics()
+        gui = getattr(self.window, "widgets", {})
+        if not isinstance(gui, dict):
+            return
+        for key, value in (
+            ("infer_time", "—" if metrics["infer_ms"] is None
+             else f"{metrics['infer_ms']:.0f}"),
+            # Rust reports only *nominal content* delay; the ~ is deliberate.
+            ("delay_time", "—" if metrics["content_delay_ms"] is None
+             else f"~{metrics['content_delay_ms']:.0f}"),
+            ("gpu_usage", "—" if self._gpu.value is None
+             else f"{self._gpu.value:.0f}"),
+            ("sr_stream", "—"),
+        ):
+            handle = gui.get(key)
+            if handle is not None:
+                try:
+                    handle.update(value)
+                except Exception:
+                    pass
 
     def close(self):
         self._closing.set()
@@ -431,7 +447,7 @@ def install(window_class):
         try:
             self._amd_vcrs_panel = AmdPanel(self)
         except Exception as exc:
-            print("[AMD] AMD sekmesi yüklenemedi: " + str(exc), flush=True)
+            _log_safely("AMD sekmesi yüklenemedi: " + str(exc))
 
     @wraps(shutdown_original)
     def shutdown(self, *args, **kwargs):
@@ -457,6 +473,21 @@ def install(window_class):
                     panel.stop()
                     continue
             return event, values
+
+    # Existing UI refreshes normal-PyTorch stats on its own timer. Override
+    # with measured Rust stats in the same tick to prevent badge flicker.
+    if hasattr(window_class, "_studio_tick"):
+        tick_original = window_class._studio_tick
+
+        @wraps(tick_original)
+        def studio_tick(self, *args, **kwargs):
+            result = tick_original(self, *args, **kwargs)
+            panel = getattr(self, "_amd_vcrs_panel", None)
+            if panel is not None:
+                panel.paint_stats()
+            return result
+
+        window_class._studio_tick = studio_tick
 
     window_class.__init__ = init
     window_class.shutdown = shutdown
