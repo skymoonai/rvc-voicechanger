@@ -50,11 +50,13 @@ jobs:
       - name: Download and checksum-verify pinned vc-rs
         shell: pwsh
         run: |
-          & ./scripts/install_vcrs_amd.ps1 -Destination (Join-Path $env:RUNNER_TEMP 'vc-rs')
+          # Test the default -File path too (previously failed with empty $PSScriptRoot).
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PWD 'scripts/install_vcrs_amd.ps1')
+          if ($LASTEXITCODE -ne 0) { throw 'Default installer invocation failed' }
       - name: Verify bundled CLI recognizes options
         shell: pwsh
         run: |
-          $cli = Join-Path $env:RUNNER_TEMP 'vc-rs/vc-rs.exe'
+          $cli = Join-Path $PWD 'engines/vc-rs/vc-rs.exe'
           if (!(Test-Path $cli)) { throw "vc-rs.exe is missing after install" }
           $help = (& $cli run --help | Out-String)
           if ($LASTEXITCODE -ne 0) { throw 'vc-rs run --help failed' }
