@@ -856,7 +856,7 @@ class Window:
         cpl.addWidget(self._combo('compute_backend',
                                   ['Otomatik', 'CPU', 'Ekran Kartı (GPU)'],
                                   data.get('compute_backend', 'Otomatik')))
-        compute_status = self._text('Seçim, sesi başlattığında uygulanır. GPU seçeneği kurulu CUDA / DirectML gerektirir.')
+        compute_status = self._text('Seçim, sesi başlattığında uygulanır. GPU seçeneği kurulu CUDA / ROCm / DirectML gerektirir.')
         self._register('compute_backend_status', compute_status, 'label')
         cpl.addWidget(compute_status)
         perf.addWidget(compute)
