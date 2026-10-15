@@ -5,13 +5,25 @@ This branch adds an **opt-in AMD Motoru** tab powered by the MIT-licensed
 The existing Python/PyTorch RVC Studio audio callback, NVIDIA CUDA support,
 models, profiles, normal DirectML path, Soundpad and file conversion remain unchanged.
 
+**CRITICAL COMPATIBILITY WARNING (15 Oct 2026):** This branch is based on
+RVC Studio's older source tree (APP_VERSION 1.3.0-beta.1), while the released
+Windows setup is currently 1.5.2 Beta 1. **Do NOT overwrite the installed
+1.5.2 `tools/rvc_modern_qt.py` with the file from this branch.** Doing so
+breaks the later system-tray initialization (reported error:
+`'Window' object has no attribute 'tray'`). Reinstall the official 1.5.2
+release into the same install folder to restore version-matched UI files.
+The standalone `engines/vc-rs/vc-gui.exe` remains usable. The Rust sidecar
+has not yet been ported onto the 1.5.2 UI sources; this draft PR is not an
+end-user installer/patch. Do not follow the steps below to mix these
+versions until that port is complete.
+
 **Status:** integration scaffold / early beta. Python syntax + subprocess
 unit tests are checked by GitHub Actions. **No AMD GPU or audio hardware validation
 has been performed.** Working audio, latency, and acceleration are not guaranteed.
 
 ## Windows installation
 
-1. Install RVC Studio normally (for example at `C:\RVCStudio`).
+1. For source-tree development only: use a self-consistent checkout of this experimental branch. **Do not combine its UI module with the 1.5.2 release installer.**
 2. Open PowerShell (administrator privileges are not required) and run:
 
    ```powershell
