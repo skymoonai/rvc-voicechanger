@@ -42,3 +42,23 @@ jobs:
             [ref]$tokens, [ref]$errors
           ) | Out-Null
           if ($errors) { $errors | Format-List; exit 1 }
+
+  upstream-vcrs-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and checksum-verify pinned vc-rs
+        shell: pwsh
+        run: |
+          & ./scripts/install_vcrs_amd.ps1 -Destination (Join-Path $env:RUNNER_TEMP 'vc-rs')
+      - name: Verify bundled CLI recognizes options
+        shell: pwsh
+        run: |
+          $cli = Join-Path $env:RUNNER_TEMP 'vc-rs/vc-rs.exe'
+          if (!(Test-Path $cli)) { throw "vc-rs.exe is missing after install" }
+          $help = (& $cli run --help | Out-String)
+          if ($LASTEXITCODE -ne 0) { throw 'vc-rs run --help failed' }
+          foreach ($switch in @('--provider','--model','--embedder','--f0-model','--input','--output','--chunk-ms','--pitch-shift')) {
+            if (!$help.Contains($switch)) { throw "vc-rs missing expected option: $switch" }
+          }
+          Write-Host 'Pinned vc-rs CLI options verified.'
