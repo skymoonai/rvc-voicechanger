@@ -497,6 +497,10 @@ def install(window_class):
     """Preserve original tray/UI. AMD engine becomes default; no new AMD tab."""
     if getattr(window_class, "_rvc_amd_edition_installed", False):
         return
+    # Shared NVIDIA/AMD PTH-based profiles should retain +/-24 semitone
+    # settings and stay valid through export/restore.
+    from tools import rvc_profile_backup
+    rvc_profile_backup.RANGES["pitch"] = (-24, 24)
     old_init = window_class.__init__
     old_read = window_class.read
     old_shutdown = window_class.shutdown
