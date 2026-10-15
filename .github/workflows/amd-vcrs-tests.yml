@@ -92,6 +92,13 @@ jobs:
             if (!$help.Contains($switch)) { throw "vc-rs missing expected option: $switch" }
           }
           Write-Host 'Pinned vc-rs CLI options verified.'
+          $wavHelp = (& $cli wav --help | Out-String)
+          if ($LASTEXITCODE -ne 0) { throw 'vc-rs wav --help failed' }
+          foreach ($switch in @('--provider','--model','--embedder','--f0-model','--input','--output','--chunk-ms','--pitch-shift','--rms-mix-rate','--denoiser')) {
+            if (!$wavHelp.Contains($switch)) { throw "vc-rs WAV missing option: $switch" }
+          }
+          if ($wavHelp.Contains('--silence-threshold')) { Write-Host 'Optional WAV silence threshold is supported.' }
+          Write-Host 'vc-rs WAV options verified.'
       - uses: actions/checkout@v4
         with:
           repository: shirohata/vc-rs
