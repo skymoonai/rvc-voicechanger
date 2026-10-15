@@ -1,0 +1,25 @@
+Resemble Enhance — deneysel, yerel ses onarımı
+
+Resmî kaynak: https://github.com/resemble-ai/resemble-enhance
+Kaynak ağacı: 8e978149bfe8abab3eb77d965d579a111afdb0ff
+Model: https://huggingface.co/ResembleAI/resemble-enhance
+Model sürümü: 4e3510ce4a8391159f665903544c5150bee7b2cb
+Model dosyası: enhancer_stage2/ds/G/default/mp_rank_00_model_states.pt
+SHA-256: f9d035f318de3e6d919bc70cf7ad7d32b4fe92ec5cbe0b30029a27f5db07d9d6
+Boyut: 713176232 bayt. Model ilk kullanımda uygulama içine indirilir.
+
+tools/resemble_runtime, resmî MIT kaynak kodunun yalnız çıkarım için uyarlanmış
+kısmıdır. Eğitim, DeepSpeed, veri hazırlama ve çizim bağımlılıkları alınmadı.
+Model mimarisi ve öğrenilmiş ağırlıklar korunur. SciPy fsolve sonucu için
+NumPy ile uyumlu .item() dönüşümü kullanılır. Model ayarları resmî YAML'dan
+JSON'a aktarılmıştır. Ses parçaları diskte işlenir; uzun kayıtlar tümüyle
+belleğe alınmaz. İptal ve GPU bellek hatası için ayrı işlem kullanılır.
+
+Ana lisans: RESEMBLE_LICENSE.txt (MIT, Resemble AI).
+Alias-free filtreler: https://github.com/junjun3518/alias-free-torch
+ALIAS_FREE_LICENSE.txt (Apache-2.0).
+Julius sinc atfı: https://github.com/adefossez/julius
+JULIUS_LICENSE.txt (MIT).
+
+Bu entegrasyon Resemble AI tarafından desteklenen veya onaylanan bir ürün değildir.
+Ses yerel bilgisayarda işlenir; ses dosyası sunucuya gönderilmez.

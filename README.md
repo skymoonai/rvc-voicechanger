@@ -128,3 +128,8 @@ This is **beta software**: bugs, crashes, audio glitches and incompatibilities m
 Yararlı bulduysanız ⭐ repo'ya yıldız bırakabilirsiniz. / If you find it useful, consider starring the repository.
 
 </div>
+
+## Kaynak Kod / Source Code
+
+Python kaynak kodlari bu depoda. Gelistirici rehberi: [README_SOURCE.md](README_SOURCE.md).
+

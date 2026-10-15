@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+﻿# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
 *$py.class
@@ -218,3 +218,64 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# RVC Studio source exclusions
+
+# RVC Studio local environments and user data
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.cache/
+*.log
+logs/
+recordings/
+models/
+weights/
+indices/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+*.index
+*.wav
+*.mp3
+*.flac
+*.bak*
+*Guncelleme_Yedegi*/
+*Update_Backup*/
+RVC_Studio.exe
+assets/downloader/deno.exe
+assets/rnnoise/rnnoise.dll
+assets/weights/
+assets/hubert_base/
+assets/rmvpe/
+assets/enhance/model/
+assets/apbwe/model/
+assets/indices/
+assets/soundpad/
+configs/yt_dlp_cache/
+configs/voice_database_cache.json
+configs/config.json
+configs/audio_setup.json
+configs/hotkeys.json
+configs/model_profiles.json
+configs/monitor_settings.json
+configs/soundpad.json
+configs/soundpad_links.json
+configs/file_conversion.json
+configs/ui_state.json
+configs/apbwe.json
+configs/rnnoise.json
+configs/preferences.json
+configs/consent.json
+configs/session.json
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+*.key
+*.secret
+

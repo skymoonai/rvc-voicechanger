@@ -1,0 +1,41 @@
+RVC Studio — dagitim ve ucuncu taraf notlari
+
+RVC upstream projesi: https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI
+Upstream MIT lisans metni: RVC_UPSTREAM_LICENSE.txt
+
+Bu Lite kurucu Python, PyTorch, Torchaudio, PySide6/Qt ve diger bagimliliklari
+kurulum sirasinda ilgili resmi paket kaynaklarindan indirir. Bu paketlerin
+kendi lisanslari ve bilesen sorumluluklari gecerlidir.
+
+Kurulum araci Inno Setup ile derlenir: https://jrsoftware.org/
+Deno JavaScript runtime: https://github.com/denoland/deno
+
+RVC'nin HuBERT ve RMVPE yardimci model agirliklari uygulamanin calismasi
+icin paketlenebilir; dagitmadan once bunlarin kullanim ve yeniden dagitim
+haklarini ayri olarak kontrol edin. Kisisel ses modelleri pakete eklenmez.
+
+RNNoise / Soundpad ekleri (v1.2.0)
+=================================
+RNNoise: https://github.com/xiph/rnnoise (BSD-3-Clause).
+Native DLL: PyRNNoise 0.4.5 Windows amd64 wheel, https://github.com/pengzhendong/pyrnnoise
+Windows wheel SHA256: f46015e5a58212d2883bf8e5a2cafb3c6b115176d8039f8340132cb24866b7da
+Lisanslar: assets/rnnoise/RNNOISE_LICENSE.txt ve PYRNNOISE_LICENSE.txt.
+RNNoise yerel CPU'da calisir; ses sunucuya gonderilmez.
+
+yt-dlp 2026.8.19: https://github.com/yt-dlp/yt-dlp (Unlicense).
+yt-dlp-ejs 0.8.0: https://github.com/yt-dlp/ejs (Unlicense, MIT, ISC).
+Paketlerin lisanslari kuruldukleri Python ortaminda korunur.
+Deno 2.9.7: https://github.com/denoland/deno (MIT + bagimli bilesen lisanslari).
+Deno lisansi: assets/downloader/DENO_LICENSE.md; kaynak ve hash deno_source.json.
+Spotify entegrasyonu: resmi oEmbed / public embed metadata + secilebilir YouTube eslesmesi.
+Spotify'dan sifreli tam ses akisi alinmaz; spotDL kaynakta ayni eslesme yaklasimini kullanir.
+Arastirilan proje: https://github.com/spotDL/spotify-downloader (MIT).
+Soundpad orijinal yerel dosyalari degistirmez; duzenlemeler ayri JSON'da saklanir.
+
+Deneysel ses onarımı (v1.2.1)
+Resemble Enhance: https://github.com/resemble-ai/resemble-enhance (MIT).
+Yalnız çıkarım kodu uyarlanmıştır; eğitim bağımlılıkları alınmaz.
+Model ilk kullanımda sabit sürümden indirilir ve SHA-256 doğrulanır.
+Ayrıntılar ve ek lisanslar: assets/enhance/THIRD_PARTY_NOTICES.txt.
+
+AP-BWE: MIT generator and weights; details in assets/apbwe/THIRD_PARTY_NOTICES.txt.
