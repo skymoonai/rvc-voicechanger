@@ -122,10 +122,17 @@ class AmdEdition:
             index_widget.hide()
             layout = index_widget.parentWidget().layout() if index_widget.parentWidget() else None
             if layout:
+                # Keep the primary model browser; only hide the *INDEX row*
+                # and its own browse button, not all buttons in that card.
                 for i in range(layout.count()):
-                    child = layout.itemAt(i).widget()
-                    if isinstance(child, QPushButton):
-                        child.hide()
+                    row = layout.itemAt(i).layout()
+                    if row is None:
+                        continue
+                    cells = [row.itemAt(j).widget() for j in range(row.count())]
+                    if index_widget in cells:
+                        for widget in cells:
+                            if widget is not None:
+                                widget.hide()
         # Native vc-rs cannot consume FAISS .index or the PyTorch formant
         # estimator; do not let unused sliders mislead AMD users.
         self._hide_slider("index_rate")
