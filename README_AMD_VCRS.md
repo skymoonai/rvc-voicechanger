@@ -14,8 +14,7 @@ breaks the later system-tray initialization (reported error:
 release into the same install folder to restore version-matched UI files.
 The standalone `engines/vc-rs/vc-gui.exe` remains usable. The Rust sidecar
 has not yet been ported onto the 1.5.2 UI sources; this draft PR is not an
-end-user installer/patch. Do not follow the steps below to mix these
-versions until that port is complete.
+end-user installer/patch. For the installed 1.5.2 release, use the **non-destructive AMD UI extension**\ninstead: [Turkish setup guide](README_AMD_152_EXTENSION.md). The extension\npatches only a small startup hook and keeps the release's own Window/tray\nimplementation untouched; **do not copy this branch's old main UI file**.
 
 **Status:** integration scaffold / early beta. Python syntax + subprocess
 unit tests are checked by GitHub Actions. **No AMD GPU or audio hardware validation
