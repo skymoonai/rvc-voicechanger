@@ -288,6 +288,54 @@ class AmdEdition:
             if chosen.lower().endswith(".pth"):
                 self.convert_model(chosen)
 
+    def add_portable_profile(self):
+        """Store the PTH source for NVIDIA and its ONNX conversion for AMD.
+
+        The original profile backup service continues to archive the source
+        PTH. Restored AMD profiles re-export ONNX as needed, so they stay
+        readable by either motor without unsafe archive format changes.
+        """
+        from PySide6.QtWidgets import QFileDialog, QInputDialog
+        from uuid import uuid4
+        source, _ = QFileDialog.getOpenFileName(
+            self.window.root, "Her iki motorla uyumlu PTH model seç",
+            "", "RVC model (*.pth)"
+        )
+        if not source:
+            return
+        name, accepted = QInputDialog.getText(
+            self.window.root, "AMD / NVIDIA ses profili",
+            "Kütüphanede görünecek ad:", text=Path(source).stem
+        )
+        if not accepted:
+            return
+        owner = self.window.owner
+        if getattr(owner, "stream", None) is not None and getattr(owner.stream, "active", False):
+            self._status("Profil eklemek için önce diğer ses motorunu durdur.")
+            return
+        was_active = self.bridge.running
+        if was_active:
+            self.stop()
+        try:
+            owner.profile_save_values(self.window._values())
+            entry = {
+                "id": uuid4().hex, "name": name.strip() or Path(source).stem,
+                "pth_path": str(Path(source).resolve()),
+                "index_path": "",
+                "settings": owner.profile_capture(self.window._values()),
+            }
+            owner.profiles.append(entry)
+            owner.active_profile_id = entry["id"]
+            owner.profile_store()
+            owner.profile_labels_refresh()
+            owner.profile_apply(entry)
+            self.convert_model(source)
+            self._status("Profil kaydedildi. PTH NVIDIA için, ONNX AMD için kullanılacak.")
+            if was_active:
+                self._pending_start = True
+        except Exception as exc:
+            self._status("Profil eklenemedi: " + str(exc))
+
     def convert_model(self, pth):
         if self._converting:
             return
@@ -541,6 +589,14 @@ def install(window_class):
             if event == "reload_devices":
                 edition.refresh_devices()
                 continue
+            if event == "profile_add":
+                edition.add_portable_profile()
+                continue
+            if event == "profile_select" and edition.bridge.running:
+                edition.stop()
+                from PySide6.QtCore import QTimer
+                QTimer.singleShot(500, edition.start)
+                return event, values
             if event == "start_vc":
                 edition.start()
                 continue
