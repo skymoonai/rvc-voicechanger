@@ -43,7 +43,6 @@ def make_command(edition, source: Path, target: Path, model: Path, settings: dic
         "--pitch-shift", str(float(settings.get("pitch", 0))),
         "--rms-mix-rate", str(max(0., min(1., float(settings.get("rms_mix_rate", 0))))),
         "--chunk-ms", str(max(50, min(1000, int(settings.get("amd_chunk_ms", 200))))),
-        "--silence-threshold", str(max(0.000001, min(1., 10 ** (float(settings.get("threhold", -60)) / 20)))),
     ]
     if rnnoise:
         command.extend(["--denoiser", "rnnoise"])
