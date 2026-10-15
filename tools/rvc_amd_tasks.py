@@ -214,6 +214,11 @@ def install_capture(studio_tools, edition):
                 options = [i for i, item in enumerate(devices)
                            if item["max_input_channels"] > 0 and
                            str(item["name"]).casefold() == device_name.casefold()]
+                if device_name and len(options) != 1:
+                    raise RuntimeError(
+                        "Seçilen WASAPI mikrofonu Python kayıt motorunda benzersiz bulunamadı: "
+                        + device_name + ". Başka giriş aygıtı seç."
+                    )
                 chosen = options[0] if len(options) == 1 else None
                 with sd.InputStream(device=chosen, samplerate=48000, channels=1,
                                     dtype="float32", blocksize=1024, latency="low") as stream:
