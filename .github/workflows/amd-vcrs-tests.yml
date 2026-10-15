@@ -1,0 +1,44 @@
+name: AMD vc-rs preview checks
+on:
+  pull_request:
+    paths:
+      - "tools/rvc_amd_bridge.py"
+      - "tools/rvc_modern_qt.py"
+      - "tests/test_amd_bridge.py"
+      - "scripts/install_vcrs_amd.ps1"
+      - ".github/workflows/amd-vcrs-tests.yml"
+  push:
+    branches:
+      - "feature/amd-vcrs-preview"
+    paths:
+      - "tools/rvc_amd_bridge.py"
+      - "tools/rvc_modern_qt.py"
+      - "tests/test_amd_bridge.py"
+      - "scripts/install_vcrs_amd.ps1"
+
+jobs:
+  python-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile changed modules
+        run: python -m py_compile tools/rvc_amd_bridge.py tools/rvc_modern_qt.py
+      - name: Run sidecar unit tests
+        run: python -m unittest discover -s tests -p 'test_amd_bridge.py' -v
+  powershell-parse:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse PowerShell installer
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD 'scripts/install_vcrs_amd.ps1'),
+            [ref]$tokens, [ref]$errors
+          ) | Out-Null
+          if ($errors) { $errors | Format-List; exit 1 }
