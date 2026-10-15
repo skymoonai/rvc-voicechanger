@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import shutil
 import threading
 import urllib.request
 from pathlib import Path
@@ -63,6 +64,27 @@ def ensure_models(progress, cancel: threading.Event | None = None) -> tuple[Path
             progress(name + " hazır", 1.0)
             continue
         temp = BASE / (name + ".download")
+        # Preserve vc-rs GUI downloads from earlier tests; avoid downloading
+        # 740 MB again when a verified copy exists already.
+        candidates = [
+            Path(os.environ.get("LOCALAPPDATA", "")) / "vc-rs" / "models" / name,
+        ]
+        for root in candidates[:]:
+            folder = root.parent
+            if folder.is_dir():
+                candidates.extend(folder.glob("*/" + name))
+        for existing in candidates:
+            if existing.resolve() == target.resolve() or not verified(existing, meta):
+                continue
+            shutil.copy2(existing, temp)
+            if not verified(temp, meta):
+                temp.unlink(missing_ok=True)
+                continue
+            os.replace(temp, target)
+            progress(name + " mevcut vc-rs kütüphanesinden alındı", 1.0)
+            break
+        if verified(target, meta):
+            continue
         progress(name + " indiriliyor (GPL-3.0)", 0.0)
         try:
             req = urllib.request.Request(meta["url"], headers={"User-Agent": "RVCStudio-AMD/1.5.2"})
