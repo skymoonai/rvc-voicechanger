@@ -1,4 +1,4 @@
-"""RVC Studio real-time inference backend selection (CPU/CUDA/DirectML).
+"""RVC Studio real-time inference backend selection (CPU/CUDA/ROCm/DirectML).
 
 The selection changes the active RVC inference engine, not merely a UI label.
 It does not install GPU drivers or PyTorch backends.
@@ -23,18 +23,18 @@ def choose_backend(mode):
     if mode == 'Otomatik':
         device, dtype = cfg.infer_device, cfg.infer_dtype
         kind = getattr(device, 'type', str(device).split(':')[0])
-        label = 'NVIDIA CUDA' if kind == 'cuda' else ('AMD / Intel DirectML' if kind == 'privateuseone' else 'CPU')
+        label = ('AMD ROCm' if cfg.ROCM_BUILD else 'NVIDIA CUDA') if kind == 'cuda' else ('AMD / Intel DirectML' if kind == 'privateuseone' else 'CPU')
         return device, dtype, label
 
     profiles = [profile for profile in cfg.GPU_PROFILES if profile[0].type == 'cuda']
     if profiles:
         device, dtype, _, _ = max(profiles, key=lambda p: (p[2], p[3]))
-        return device, dtype, 'NVIDIA CUDA'
+        return device, dtype, 'AMD ROCm' if cfg.ROCM_BUILD else 'NVIDIA CUDA'
     if cfg.DML_AVAILABLE and cfg.DML_DEVICE is not None:
         return cfg.DML_DEVICE, torch.float32, 'AMD / Intel DirectML'
     raise RuntimeError(
         'Bu kurulumda kullanılabilir GPU hızlandırması bulunamadı. '
-        'NVIDIA için CUDA, AMD/Intel için DirectML profiliyle kurulum yapın '
+        'NVIDIA için CUDA, desteklenen AMD kartları için ROCm veya DirectML profiliyle kurulum yapın '
         've ekran kartı sürücünüzü kontrol edin. CPU seçeneğini kullanabilirsiniz.'
     )
 
@@ -54,7 +54,7 @@ def apply_backend(config, mode):
     config.dtype = dtype
     config.is_half = dtype == torch.float16
     config.dml = kind == 'privateuseone'
-    config.cuda_graph = bool(kind == 'cuda' and cfg.CUDA_GRAPH_AVAILABLE)
+    config.cuda_graph = bool(kind == 'cuda' and not cfg.ROCM_BUILD and cfg.CUDA_GRAPH_AVAILABLE)
     config.instead = 'cpu' if kind == 'cpu' else ''
     config.gpu_name = None
     config.gpu_mem = None
