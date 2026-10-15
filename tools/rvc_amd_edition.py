@@ -503,6 +503,8 @@ def install(window_class):
     old_tick = getattr(window_class, "_studio_tick", None)
     old_import = getattr(window_class, "_import_database_model", None)
     old_studio_event = getattr(window_class, "_studio_event", None)
+    old_browse = getattr(window_class, "_file_browse", None)
+    old_request_voice = getattr(window_class, "_request_voice", None)
 
     @wraps(old_init)
     def init(self, *args, **kwargs):
@@ -576,6 +578,28 @@ def install(window_class):
                     edition.convert_model(models[0])
             return result
         window_class._import_database_model = import_model
+
+    if old_browse is not None:
+        @wraps(old_browse)
+        def file_browse(self, event, *args, **kwargs):
+            edition = getattr(self, "_amd_edition", None)
+            if edition is not None and event == "_browse_pth":
+                edition.browse()
+                return
+            if edition is not None and event == "_browse_index":
+                return
+            return old_browse(self, event, *args, **kwargs)
+        window_class._file_browse = file_browse
+
+    if old_request_voice is not None:
+        @wraps(old_request_voice)
+        def request_voice(self, mode, *args, **kwargs):
+            result = old_request_voice(self, mode, *args, **kwargs)
+            edition = getattr(self, "_amd_edition", None)
+            if edition is not None:
+                edition.set_passthrough(mode == "im")
+            return result
+        window_class._request_voice = request_voice
 
     if old_studio_event is not None:
         @wraps(old_studio_event)
