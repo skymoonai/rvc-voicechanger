@@ -25,9 +25,9 @@ from tools.rvc_user_state import APP_VERSION
 
 TAB_IDS={'Ses Ayarları':'voice','Ses Dönüşümü':'voice','Soundpad':'soundpad',
     'Dosyadan Dönüştür':'file','AI LAB Türkiye':'database','Ses Cihazları':'audio','Giriş ve Çıkış':'audio',
-    'Ses Temizleme ve Kalite':'quality','Ses Testi / A-B':'testing','Ayarlar':'settings',
+    'Ses Temizleme ve Kalite':'quality','AMD Motoru':'amd','Ses Testi / A-B':'testing','Ayarlar':'settings',
     'Hakkında':'about','Günlük':'log','Kısayollar':'settings','Gecikme ve Filtreler':'settings','Kendi Sesimi Dinle':'audio'}
-DEFAULT_TAB_ORDER=['voice','soundpad','file','database','audio','quality','testing','settings','about','log']
+DEFAULT_TAB_ORDER=['voice','amd','soundpad','file','database','audio','quality','testing','settings','about','log']
 
 C = {
     'bg': '#0B0D17', 'sidebar': '#101424', 'panel': '#161B2D',
@@ -478,6 +478,8 @@ class BrandImage(QWidget):
 class Window:
     def __init__(self, owner, data):
         self.owner = owner
+        from tools.rvc_amd_bridge import VcRsBridge
+        self.amd = VcRsBridge()
         self.events = queue.Queue()
         self.widgets = {}
         self.groups = {}
@@ -560,6 +562,9 @@ class Window:
                 event = self.events.get_nowait()
                 if event.startswith('studio_'):
                     self._studio_event(event)
+                    continue
+                if event == 'start_vc' and self.amd.running:
+                    _popup('AMD motoru çalışırken Python ses motoru başlatılamaz. Önce AMD motorunu durdur.', error=True)
                     continue
                 if event == 'audio_setup':
                     self.open_setup_wizard()
@@ -835,6 +840,67 @@ class Window:
         fr.addStretch()
         fl.addLayout(fr)
         voice.addWidget(f0)
+
+        # RVC_AMD_VCRS_PREVIEW_V1: isolated ONNX/Windows ML sidecar; no changes
+        # to the existing PyTorch CUDA, DirectML or Soundpad audio callbacks.
+        from tools.rvc_amd_bridge import load_preferences
+        amd_cfg = load_preferences()
+        amd = self._tab(tabs, 'AMD Motoru')
+        ac, al = self._card(
+            'AMD ONNX Motoru · Deneysel',
+            'vc-rs Rust worker ve ONNX Runtime / Windows ML üzerinden ayrı bir ses akışı.'
+        )
+        al.addWidget(self._text(
+            'Ana RVC Studio motoru aynı anda çalışamaz. İlk denemede sadece RVC v2/F0 ONNX modelleri '
+            've RMVPE kullanılır. INDEX, formant, canlı filtreler, Soundpad yönlendirmesi ve '
+            'mevcut test/izleme araçları AMD motoruna henüz bağlı değildir.'
+        ))
+        al.addWidget(self._text('Ses modeli (.onnx); PTH seçersen aynı klasörde .onnx aranır', 'eyebrow'))
+        arow = QHBoxLayout()
+        arow.addWidget(self._edit('amd_model', amd_cfg.get('model', data.get('pth_path', '')), 'RVC v2 F0 model.onnx'), 1)
+        arow.addWidget(self._btn('ONNX seç', '_browse_amd_model'))
+        al.addLayout(arow)
+        al.addWidget(self._btn('PTH → ONNX dönüştürücüyü aç (vc-rs GUI)', 'studio_amd_converter'))
+        al.addWidget(self._text(
+            'Destek modellerini vc-rs GUI üzerinden indirebilir veya aşağıda ONNX yollarını gösterebilirsin.'
+        ))
+        al.addWidget(self._text('ContentVec ONNX (boşsa otomatik aranır)', 'eyebrow'))
+        arow = QHBoxLayout()
+        arow.addWidget(self._edit('amd_embedder', amd_cfg.get('embedder', ''), 'content_vec_500.onnx'), 1)
+        arow.addWidget(self._btn('Seç', '_browse_amd_embedder'))
+        al.addLayout(arow)
+        al.addWidget(self._text('RMVPE ONNX (boşsa otomatik aranır)', 'eyebrow'))
+        arow = QHBoxLayout()
+        arow.addWidget(self._edit('amd_f0', amd_cfg.get('f0', ''), 'rmvpe.onnx'), 1)
+        arow.addWidget(self._btn('Seç', '_browse_amd_f0'))
+        al.addLayout(arow)
+        al.addWidget(self._text('AMD hesaplama motoru', 'eyebrow'))
+        al.addWidget(self._combo('amd_provider', ['DirectML', 'MIGraphX (deneysel)'],
+                                 amd_cfg.get('provider', 'DirectML'), event=False))
+        al.addWidget(self._text('Ses bloğu · milisaniye (küçük blok daha az gecikme, daha fazla kesilme riski)', 'eyebrow'))
+        al.addWidget(self._combo('amd_chunk_ms', ['100', '200', '250', '500', '750', '1000'],
+                                 amd_cfg.get('chunk_ms', '500'), event=False))
+        al.addWidget(self._text('vc-rs WASAPI giriş aygıtı (boş = Windows varsayılanı)', 'eyebrow'))
+        al.addWidget(self._edit('amd_input', amd_cfg.get('input', ''), 'Örn. Microphone (...)'))
+        al.addWidget(self._text('vc-rs WASAPI çıkış aygıtı (boş = Windows varsayılanı)', 'eyebrow'))
+        al.addWidget(self._edit('amd_output', amd_cfg.get('output', ''), 'Örn. CABLE Input (...)'))
+        al.addWidget(self._btn('WASAPI aygıtlarını günlükte göster', 'studio_amd_devices'))
+        ar = QHBoxLayout()
+        ar.addWidget(self._btn('▶ AMD Motorunu Başlat', 'studio_amd_start', 'primary'))
+        ar.addWidget(self._btn('■ AMD Motorunu Durdur', 'studio_amd_stop', 'stop'))
+        al.addLayout(ar)
+        self.amd_status_label = self._text('Durduruldu')
+        al.addWidget(self.amd_status_label)
+        self.amd_log = QPlainTextEdit()
+        self.amd_log.setReadOnly(True)
+        self.amd_log.setMinimumHeight(155)
+        self.amd_log.setPlaceholderText('vc-rs durumu, hata ve aygıt listesi burada gösterilir.')
+        al.addWidget(self.amd_log)
+        al.addWidget(self._text(
+            'AMD tarafında Pitch, ana Ses Dönüşümü sekmesindeki değerle başlatılır; '
+            'değişiklik için AMD motorunu durdurup yeniden başlat.'
+        ))
+        amd.addWidget(ac)
         quality=self._tab(tabs,'Ses Temizleme ve Kalite')
         ap, apl = self._card('Deneysel Canlı Ses İyileştirme · AP-BWE',
                              'RVC çıkışındaki üst frekans ayrıntılarını yeniler. Etkisi modele göre değişir; yanlış perdeyi veya tonlamayı düzeltmez.')
@@ -989,7 +1055,10 @@ class Window:
 
         # Browsers are not RVC events; change only the input path field.
         self._local_events = {'_browse_pth': ('pth_path','RVC model (*.pth)'),
-                              '_browse_index': ('index_path','INDEX dosyası (*.index)')}
+                              '_browse_index': ('index_path','INDEX dosyası (*.index)'),
+                              '_browse_amd_model': ('amd_model','ONNX model (*.onnx)'),
+                              '_browse_amd_embedder': ('amd_embedder','ONNX model (*.onnx)'),
+                              '_browse_amd_f0': ('amd_f0','ONNX model (*.onnx)')}
 
     def _build_hotkeys(self):
         from tools.rvc_hotkeys import ACTIONS
@@ -1606,6 +1675,7 @@ class Window:
             self.owner.output_monitor.configure(vals['monitor_enabled'], vals['monitor_device'], vals['monitor_volume'], restart=False)
         except Exception as exc:
             print('Dinleme ayarları kaydedilemedi: '+str(exc),flush=True)
+        self.amd.close()
         self.hotkeys.close()
         self.gpu.close()
         self.database.close()
@@ -1649,6 +1719,11 @@ class Window:
             return
         self._last_visual_tick = now
         self._log_tick()
+        amd_status, amd_tail = self.amd.status()
+        self.amd_status_label.setText(_tr(amd_status))
+        if self.amd_log.toPlainText() != amd_tail:
+            self.amd_log.setPlainText(amd_tail)
+            self.amd_log.verticalScrollBar().setValue(self.amd_log.verticalScrollBar().maximum())
         self._database_tick()
         self.soundpad_page.tick()
         self.conversion_page.tick()
@@ -1730,6 +1805,9 @@ class Window:
             tools.ab_state = 'A/B işlemi sürüyor; kısayol işlem tamamlanınca kullanılabilir.'
             return
         if action == 'toggle_vc':
+            if self.amd.running:
+                self.events.put('studio_amd_stop')
+                return
             stream = getattr(self.owner, 'stream', None)
             self.events.put('stop_vc' if stream is not None and stream.active else 'start_vc')
         elif action == 'toggle_voice':
@@ -1759,6 +1837,37 @@ class Window:
                 self.cache_toolbar_button.setToolTip(_tr(message))
                 self.cache_toolbar_button.setText(_tr('Tamamlandı' if 'temizlendi' in message else 'Önce Sesi Başlat'))
                 QTimer.singleShot(2000, self.root, lambda: self.cache_toolbar_button.setText(_tr('Gecikmeyi Sıfırla')))
+
+            elif event == 'studio_amd_start':
+                stream = getattr(self.owner, 'stream', None)
+                if stream is not None and stream.active:
+                    raise RuntimeError('Önce normal RVC Studio ses akışını durdur.')
+                if self.amd.running:
+                    raise RuntimeError('AMD motoru zaten çalışıyor.')
+                from tools.rvc_amd_bridge import save_preferences
+                values = self._values()
+                config = {
+                    'model': values['amd_model'], 'embedder': values['amd_embedder'],
+                    'f0': values['amd_f0'], 'input': values['amd_input'],
+                    'output': values['amd_output'], 'provider': values['amd_provider'],
+                    'chunk_ms': values['amd_chunk_ms'],
+                }
+                self.amd.start(
+                    model=config['model'], embedder=config['embedder'], f0=config['f0'],
+                    input_device=config['input'], output_device=config['output'],
+                    provider=config['provider'], chunk_ms=int(config['chunk_ms']),
+                    pitch=float(values.get('pitch', 0)),
+                )
+                try:
+                    save_preferences(config)
+                except OSError as exc:
+                    self.amd._log('AMD tercihleri kaydedilemedi: ' + str(exc))
+            elif event == 'studio_amd_stop':
+                self.amd.stop()
+            elif event == 'studio_amd_devices':
+                self.amd.list_devices_async()
+            elif event == 'studio_amd_converter':
+                self.amd.open_converter()
             elif event == 'studio_mute':
                 tools.muted = not tools.muted
                 self.owner.apbwe.reset()
