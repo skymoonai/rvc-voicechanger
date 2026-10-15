@@ -106,6 +106,13 @@ except Exception as _amd_extension_error:
     $nativeSource = Join-Path $SourceRoot 'tools/bin/rvcstudio-convert.exe'
     $engine = Join-Path $Target 'engines/vc-rs'
     if (Test-Path -LiteralPath $nativeSource) {
+        # Pinned compiler output from vc-convert v0.5.3 Windows CI.
+        # Abort before copying executables if this artifact was replaced.
+        $expectedNativeSha256 = '03a416d37af38c82517e393a0ae8cd029482a5b63581bab12c2cd954422cce1c'
+        $actualNativeSha256 = (Get-FileHash -LiteralPath $nativeSource -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actualNativeSha256 -ne $expectedNativeSha256) {
+            throw "Converter SHA256 mismatch: $actualNativeSha256 (expected $expectedNativeSha256)"
+        }
         New-Item -ItemType Directory -Path $engine -Force | Out-Null
         $nativeTarget = Join-Path $engine 'rvcstudio-convert.exe'
         if (Test-Path -LiteralPath $nativeTarget) {
