@@ -677,6 +677,9 @@ def install(window_class):
             edition = getattr(self, "_amd_edition", None)
             if edition:
                 edition.paint()
+                record_btn = getattr(self, "record_button", None)
+                if record_btn is not None and edition._recording:
+                    record_btn.setText("■  AMD Kaydını Bitir")
             return result
         window_class._studio_tick = tick
 
