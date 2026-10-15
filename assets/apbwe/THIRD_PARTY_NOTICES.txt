@@ -1,0 +1,29 @@
+AP-BWE inference and pretrained generator — MIT
+Authors: Ye-Xin Lu, Yang Ai, Hui-Peng Du, Zhen-Hua Ling.
+Code: https://github.com/yxlu-0102/AP-BWE
+Pinned code commit: 751710f22404c27e5bcc983248f8b856a04b8422
+Official weights folder:
+https://drive.google.com/drive/folders/1IIYTf2zbJWzelu4IftKD6ooHloJ8mnZF
+24kto48k/g_24kto48k file: 1iD5YBJrHibplnrZsD4zShG56v9gneURK
+License text: LICENSE.txt and weights_LICENSE.txt in this directory.
+
+Transport mirror: rsxdalv/AP-BWE on Hugging Face
+Pinned mirror revision: fa3f46d233cbc1d75cec9321188f86db627ba239
+File: weights/24kto48k/g_24kto48k.zip
+Local cache name: model/g_24kto48k.pt
+Size: 119097961 bytes
+SHA256: 00950c7782a076e218f9c5a9bbc3b59a5beb0c4617b62ccea836df5f616a63dd
+The official Google Drive download and the mirror were downloaded separately
+and verified byte-identical by SHA256 on 2026-10-11.
+The .zip suffix here is PyTorch's checkpoint container; it is loaded directly
+with weights_only=True, never extracted as an arbitrary archive.
+
+Adaptations by RVC Studio:
+- Only unchanged ConvNeXtBlock and APNet_BWE_Model generator classes are vendored;
+  training discriminators and unrelated utilities are excluded.
+- Meta initialization plus strict assign load avoids unused random weight allocation.
+- Cached resampling, original lower-band preservation, adjustable upper-band
+  residual, left context and a tapered right boundary are added for live RVC.
+- Existing RVC inference context and SOLA crossfade are reused, before Soundpad mix.
+- Optional bounded CPU subprocess isolates Torch thread settings from RVC.
+- No source code from the Vonovox application is included.

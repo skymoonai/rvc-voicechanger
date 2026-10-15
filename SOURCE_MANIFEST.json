@@ -1,0 +1,569 @@
+{
+  "description": "Source-only archive file integrity manifest",
+  "files": {
+    "README_SOURCE.md": {
+      "sha256": "2b829aa96794a2556ba417da30be2eb6a8e5a8f1a1be8830c1c35ce379f3622c",
+      "size": 3724
+    },
+    "modern_launcher.py": {
+      "sha256": "f48d874fe1f8250279b690910a1ab210412752ec804e0b25a7908547211cbd04",
+      "size": 14105
+    },
+    "requirments_cpu_py312.txt": {
+      "sha256": "8b2e5576b89a8a883e37b67c54edefe5c4a8dd64f19f523ee3d683ad47bbe7dc",
+      "size": 2492
+    },
+    "RVC_UPSTREAM_LICENSE.txt": {
+      "sha256": "bec61ed1eb9a3748644ddbc50303aa6978e14eeaba46822e59a006c722b52585",
+      "size": 1142
+    },
+    "LICENSE": {
+      "sha256": "89ed953ea9333218efbcde276696edd4aa713634a74045f48dcac2202ec83d71",
+      "size": 1066
+    },
+    "requirments_cu118_py312.txt": {
+      "sha256": "9a8b78814d8375b1729706ca39919a9f8081f370c8116d0a098a58120e2cd606",
+      "size": 2392
+    },
+    ".gitignore": {
+      "sha256": "7e6501df3a6b7af2967291da516149fde3162f8b567f4a2b0959b61c9bf32452",
+      "size": 879
+    },
+    "THIRD_PARTY_NOTICES.txt": {
+      "sha256": "3d901f747b220c5e019eab26154a282159edc8180169ce91a88567612e7f6e62",
+      "size": 2295
+    },
+    "realtime_gui.py": {
+      "sha256": "0858fa6eb390f83ed98abbac4e5a27de4115ae57d64a65b26a3ac51595421408",
+      "size": 52560
+    },
+    ".gitattributes": {
+      "sha256": "773047c79f4a74ff4c72d3f6d50170576423e4f85bfe18cbc6c06776a073487c",
+      "size": 109
+    },
+    "requirments_cu128_py312.txt": {
+      "sha256": "cf84c76352851fce893e63dc86152ff9c7dcb5bc306802a452b6619bbe5c500f",
+      "size": 2349
+    },
+    "infer/audio.py": {
+      "sha256": "0297bb799aa9a12e297b905b7d34c800a7fa05ac3049a33a0f7b1536aaee6fe3",
+      "size": 1540
+    },
+    "infer/rmvpe.py": {
+      "sha256": "0f381787e63f625f485fcb1ebfeda4d6eb6b95c95c20b55714df968d5c22e712",
+      "size": 23820
+    },
+    "infer/rtrvc.py": {
+      "sha256": "9808fec7e68433d6af2238bdb9fdf4e4caed726c9c7dc7cf4f6e55678456bf3f",
+      "size": 13921
+    },
+    "infer/fcpe.py": {
+      "sha256": "ff0cf2ba3c8e7433efaa00f6578bea06fc540493565e7daaef3a235248a4e2d3",
+      "size": 7434
+    },
+    "infer/hubert.py": {
+      "sha256": "bbfba54d1d83eae3fb634b2909f8f6bf41e6ffe436200ec246867c5c93ebba26",
+      "size": 4148
+    },
+    "i18n/i18n.py": {
+      "sha256": "a3cbfadfe4a5ca30da83acf92fe94d42fbe5654a8f6e9329152d0626765e16c2",
+      "size": 780
+    },
+    "assets/skymoon_banner.png": {
+      "sha256": "1987d15e42c6decae05e07dd5917bc95275c25d6be707f60be8bf22a331b3385",
+      "size": 151447
+    },
+    "assets/rvc_logo.png": {
+      "sha256": "a2f6447ea9a814f3893b7da9a41756f1729cdaf56b26b0e1fa85ea57e459acec",
+      "size": 172809
+    },
+    "assets/rvc_logo.ico": {
+      "sha256": "b39f2493123527e8609faa928b5af95c80fdcd8f0e22262f94e7ab9beb18d22d",
+      "size": 79765
+    },
+    "assets/skymoon_avatar.png": {
+      "sha256": "7a69d990aca2187d2616327f2e332c6c8c42e9fecae2dde0e0357cf3cb6f4850",
+      "size": 78783
+    },
+    "configs/config.py": {
+      "sha256": "9ad692212958fd61e82a4f8c5f97c0a68a2988fda7334fa5b5730003fa51fffb",
+      "size": 9466
+    },
+    "scripts/check_source.py": {
+      "sha256": "5f29ee67930837f1525cec516b2f15b8bed0e5fed398d79c815a53b9c6f5caf7",
+      "size": 823
+    },
+    "tools/file_io.py": {
+      "sha256": "67ac1c2a9f4f7beeff3277f383a6b2add2336c0ffc813e4e065addf92c472a96",
+      "size": 617
+    },
+    "tools/rvc_enhance_worker.py": {
+      "sha256": "6ccfe0b40735779e10237ca788f4d6df3d39bf349abd152572415f7dcf910445",
+      "size": 12566
+    },
+    "tools/progress.py": {
+      "sha256": "2794b583a1838b2c77435b1e907f64d73e97f0f1ab91eccaa7c9e926a92ddc90",
+      "size": 1261
+    },
+    "tools/rvc_studio_tools.py": {
+      "sha256": "cef484bdc5d5622fc10b814d7ad52399f2bf870b379d2a87c3b889005c64b076",
+      "size": 12915
+    },
+    "tools/rvc_diagnostics.py": {
+      "sha256": "46a05ce0c226ae83f744e23b3a1e155b2082eb0a8c1726914301296edbca98b4",
+      "size": 5575
+    },
+    "tools/cuda_graph.py": {
+      "sha256": "20966c465090fc4ad8a0ddc84fdb2cd7970904884a4795d54fec4391b600af69",
+      "size": 8151
+    },
+    "tools/rvc_user_state.py": {
+      "sha256": "56e929a3e7197c910ea6093c2d0ea2d5a5ac12072c2598593496a7d4b691387c",
+      "size": 3623
+    },
+    "tools/rvc_apbwe.py": {
+      "sha256": "ca46c704d22292cc610b4e02bdd49425e2908400922c2ba1e0986425efd0d00c",
+      "size": 11074
+    },
+    "tools/rvc_media_ui.py": {
+      "sha256": "ba5f7ca60d8ce703d6bf30db3c07cf4e9d5832664ff2fffb9edd74e7889b681b",
+      "size": 45572
+    },
+    "tools/rvc_audio_setup.py": {
+      "sha256": "951bad93ace5cf3032965d4979be8be62f96468ac0b4da59bc163e3d5e5490c1",
+      "size": 25172
+    },
+    "tools/rvc_ui_state.py": {
+      "sha256": "bc1a1d4553d2610b58e80a2754c2ee135af024e097b73a0c6aee940ccb688897",
+      "size": 1710
+    },
+    "tools/rvc_profiles_addon.py": {
+      "sha256": "c310e88f5478e80f5340f52bd42458d91374fe691563aada2f05edcf952efa98",
+      "size": 10660
+    },
+    "tools/rvc_monitor.py": {
+      "sha256": "2438a0d875a32a5d693582d74c6b084b846fb2afa4ce907b822a1ea066d6d5c7",
+      "size": 16692
+    },
+    "tools/rvc_enhance.py": {
+      "sha256": "bb0ac56d98161b6af3261b39f852e0cbc3de2cea161f5e87fd4f35b27c676011",
+      "size": 7535
+    },
+    "tools/rvc_audio_quality.py": {
+      "sha256": "7924b3542802818cd7eec11b96573b4b15f7797bd0f993350b58ceaef05ab08d",
+      "size": 3560
+    },
+    "tools/rvc_i18n.py": {
+      "sha256": "c39516b34d476a6afb9ad6e03346fc963724df741b32877e15d0b2390547d021",
+      "size": 6923
+    },
+    "tools/rvc_apbwe_runtime.py": {
+      "sha256": "639d926e771d1ed32154f49053a0023a8378561c6aa818f0c59aa48a78dc74a5",
+      "size": 6131
+    },
+    "tools/rvc_modern_qt.py": {
+      "sha256": "95a5cffe7af1ff03e1afe6cfa225acf745e930a4499e078f2835c9ac7873fc15",
+      "size": 96454
+    },
+    "tools/rvc_clip_editor.py": {
+      "sha256": "8be26a8255c023a5c911a111752a16be6b3409ebc0238e385c3e25c1b996f3c4",
+      "size": 25184
+    },
+    "tools/rvc_noise.py": {
+      "sha256": "3377e53467a96deaf55a6844d87d9e978cdd5ab66a6d01a4a6e6610fa589e3ec",
+      "size": 7883
+    },
+    "tools/rvc_runtime_backend.py": {
+      "sha256": "8d0dd10a731f219e1bdece2b39e8a3a2f6e7c7f2d7eea5aaf71a1c6f6a8e2dc5",
+      "size": 2849
+    },
+    "tools/rvc_settings_ui.py": {
+      "sha256": "59561b2867253d43fdad6b6b1e30c75589c3c5d8d9df6aed00bd11367ba93987",
+      "size": 12730
+    },
+    "tools/rvc_beta_ui.py": {
+      "sha256": "e83a11b1d3d67ee1ab4ed13ba421f0d905ea8b29c26d825f3729bc6d1d4ede91",
+      "size": 7078
+    },
+    "tools/rvc_apbwe_cpu.py": {
+      "sha256": "054d4ddff1e8026b3c05a6188358450bdf6c61ee48908135df1a061f55fde08e",
+      "size": 5764
+    },
+    "tools/rvc_wave_edit.py": {
+      "sha256": "d1d7553f2bd03d3a34f50c32ba4ddae997a21af1530c6cd004411733a100451f",
+      "size": 12970
+    },
+    "tools/rvc_apbwe_cpu_worker.py": {
+      "sha256": "8562eabb656a262ee404fa52974d9b5093de0d9325ebe655acfd75db289e3c6e",
+      "size": 1637
+    },
+    "tools/rvc_link_download.py": {
+      "sha256": "74ce1fd1a99d1da48c320b2613b8c753a56fe6ba3475a92793768cb6ef93eccc",
+      "size": 12200
+    },
+    "tools/rvc_profile_backup.py": {
+      "sha256": "3aaf5c6e3a1617b7ab6e0fc86cbea180e1e9f6eb079e0e76ee960754cc9049db",
+      "size": 19287
+    },
+    "tools/rvc_model_database.py": {
+      "sha256": "2f1914a9553cb0854625ffb85ea628419e8e13876225f8eaab477b4cbb9b6719",
+      "size": 17590
+    },
+    "tools/apbwe_model.py": {
+      "sha256": "76c2f7cecb46e70aa062beaec0cf7077e2eadfd2a5057924726e128afd90e1a0",
+      "size": 5191
+    },
+    "tools/rvc_gpu.py": {
+      "sha256": "164b40519617f8efecc4029d783def5d350bcba1a4f5105b6adfab522f41be36",
+      "size": 3812
+    },
+    "tools/rvc_file_convert.py": {
+      "sha256": "d9074b38875fd222f299c9e5ef4ef39de9aeb35aced67335f4900d7cc0502174",
+      "size": 13907
+    },
+    "tools/rvc_soundpad.py": {
+      "sha256": "f9010d40bf94a69c208cd7572091b7627c17078d0e625bc02e35630923a17829",
+      "size": 34508
+    },
+    "tools/rvc_hotkeys.py": {
+      "sha256": "1762511d57f5bb28165fde6f1ef49a18709a12357a439db2d2e36c86128295d4",
+      "size": 13151
+    },
+    "tools/rvc_model_library.py": {
+      "sha256": "255412e85898687b795e5eb2fdb6aa9ef3479ff6bfe4116e21dfbd438292906c",
+      "size": 3898
+    },
+    "tools/rvc_errors.py": {
+      "sha256": "6585075268555d5e46336f9f06f481dcb93a96ea22789790c15305f608f79e8a",
+      "size": 4651
+    },
+    "tools/rvc_audio_files.py": {
+      "sha256": "3de9ec3f5ff0901b1cb896255889637f62a6ea164d1074ba9123d91f8a1b7e73",
+      "size": 6020
+    },
+    "tools/resemble_runtime/__init__.py": {
+      "sha256": "a9847c8f0781815e6f8148993960b66d590649a835c715481ac5cb7c2511d14f",
+      "size": 209
+    },
+    "tools/resemble_runtime/common.py": {
+      "sha256": "321c3bb6f8a2965c4fdba07285ec57807f12a7e61a92afcba86b75d90e545fb5",
+      "size": 2009
+    },
+    "tools/resemble_runtime/melspec.py": {
+      "sha256": "131717052b5b06133bc3e8118b69c73d5d981c3164a4161dc1657c103bd1ad4f",
+      "size": 2034
+    },
+    "tools/resemble_runtime/hparams.py": {
+      "sha256": "c74940f85e1486b5686f3935629b4c0e304b0783ca9cc6394d492b0e2bb9790f",
+      "size": 1374
+    },
+    "tools/uvr5/vr.py": {
+      "sha256": "1e8d823ce092b14a54dbc1f4fff4d85d0ed1b444171181e5c0ff78054f16a724",
+      "size": 15137
+    },
+    "tools/uvr5/webui.py": {
+      "sha256": "e73d6fdcd505bc4bd1fbca86c95ab9f1934d47c38a2820a6cc92018019cee564",
+      "size": 4992
+    },
+    "tools/uvr5/bsroformer.py": {
+      "sha256": "786214922e30589c96aeafbcf09bb65b1667ed1272d553d9e5f28ee75cbb5bd9",
+      "size": 15279
+    },
+    "tools/uvr5/mdxnet.py": {
+      "sha256": "53cbd655f3955983e97360667c3b120942e449b4a8e24411c20d8ed700cad1c7",
+      "size": 12112
+    },
+    "tools/torchgate/torchgate.py": {
+      "sha256": "f2c4018950a6772f130d7b36c809efbe577ffa4384a1c45cfb50bf1fd87abf28",
+      "size": 11271
+    },
+    "tools/torchgate/__init__.py": {
+      "sha256": "05e2dcfd4c20a685cb87f07d6d494c889bc554db0927d2a1b0985870ecac90c7",
+      "size": 372
+    },
+    "tools/torchgate/utils.py": {
+      "sha256": "0dbcca7d2945b657508e9b247b0c4ea98b0e3535be7abe968b6d49f2d6f0f3f9",
+      "size": 2556
+    },
+    "tools/uvr5/lib/utils.py": {
+      "sha256": "9f73334de9fa7766ea34d9e544dc473ffbe50338f95eb86d3614be14aefe9f78",
+      "size": 2811
+    },
+    "tools/uvr5/rotary_embedding_torch/__init__.py": {
+      "sha256": "1b3812ae937de03f38466cd3d12dc2fe5ed5e80ee70dc6d1b48375676589c207",
+      "size": 131
+    },
+    "tools/uvr5/rotary_embedding_torch/rotary_embedding_torch.py": {
+      "sha256": "875fd451069c1c0c1097a5c12cf1694eea8fc64d1ab940d659c0345e7e536101",
+      "size": 8757
+    },
+    "tools/uvr5/bs_roformer/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "tools/uvr5/bs_roformer/mel_band_roformer.py": {
+      "sha256": "562ee0eba64c1b779835377b201c35ea2daa1589f600fc0209916ea07dc01f60",
+      "size": 18192
+    },
+    "tools/uvr5/bs_roformer/bs_roformer.py": {
+      "sha256": "810f94e72fcc11ba9bd34fb386f1b3a259959f6c2a1c9ef0c36424ad5358ee60",
+      "size": 17435
+    },
+    "tools/uvr5/bs_roformer/attend.py": {
+      "sha256": "3bdf339f4585f951d62bb0307ca24b4f1a8c428dfdcdc3b3e32aed4e08375833",
+      "size": 2229
+    },
+    "tools/uvr5/lib/lib_v5/layers_new.py": {
+      "sha256": "e70cb68c6ed1827a933be0c543515ddaf8e41de8c657256df5f0563dd39c0343",
+      "size": 3951
+    },
+    "tools/uvr5/lib/lib_v5/layers_123821KB.py": {
+      "sha256": "766f056d98f7032baf3c8f3e2a4f870bef2e3b9307bcae71caaae42a2a559576",
+      "size": 3672
+    },
+    "tools/uvr5/lib/lib_v5/nets_new.py": {
+      "sha256": "d7630586f8812dbeebac5b67b2ea2a6d581be0f6257ebc4cb8b8e7d1ea35af62",
+      "size": 4270
+    },
+    "tools/uvr5/lib/lib_v5/model_param_init.py": {
+      "sha256": "872c10682306ffd95121b69b9a2ef970e413f6936c8d1b80b85036c5aedac36f",
+      "size": 1724
+    },
+    "tools/uvr5/lib/lib_v5/nets_61968KB.py": {
+      "sha256": "f5c398f431a03f1a99b289885292cc95ac3c0673f2c5010cf856d289b3f71cb3",
+      "size": 3952
+    },
+    "tools/uvr5/lib/lib_v5/spec_utils.py": {
+      "sha256": "6a1349f6149d41df6de48d45bb86cb52b1a306aad1861f2fa1802c3efc6e11b2",
+      "size": 21725
+    },
+    "tools/resemble_runtime/enhancer/__init__.py": {
+      "sha256": "a9847c8f0781815e6f8148993960b66d590649a835c715481ac5cb7c2511d14f",
+      "size": 209
+    },
+    "tools/resemble_runtime/enhancer/enhancer.py": {
+      "sha256": "48899660d6899c6b74a7bb5a77691cad4e6603ccfcca88ea71d11c5a4bb4f720",
+      "size": 5665
+    },
+    "tools/resemble_runtime/enhancer/hparams.py": {
+      "sha256": "61f31ba97ffb5ba21e057a9abe387043df4ebe1f7d56dc468beb535ef17ec5e7",
+      "size": 797
+    },
+    "tools/resemble_runtime/denoiser/__init__.py": {
+      "sha256": "a9847c8f0781815e6f8148993960b66d590649a835c715481ac5cb7c2511d14f",
+      "size": 209
+    },
+    "tools/resemble_runtime/denoiser/denoiser.py": {
+      "sha256": "4fb755c9d67ae14b5dafa172bab7322d8b6b5a0c424c51e347d2d26406b6ddbd",
+      "size": 5205
+    },
+    "tools/resemble_runtime/denoiser/inference.py": {
+      "sha256": "bdc3b36fce203fc53b334053ee190dc8ef40f12e3ca7952e4c008ec9ab92d3a1",
+      "size": 536
+    },
+    "tools/resemble_runtime/denoiser/hparams.py": {
+      "sha256": "17feae51ed2636865bed7b25aa8cfdffcc676d9cd5c7652c560501a669fc2fd3",
+      "size": 404
+    },
+    "tools/resemble_runtime/denoiser/unet.py": {
+      "sha256": "53281573d919eec1c0fe268fc7d9ea98bf7c3000a34fb33c7cb7e6f8ae8d92fb",
+      "size": 4027
+    },
+    "tools/resemble_runtime/enhancer/univnet/lvcnet.py": {
+      "sha256": "85346de8c042072940dcaf419f83627d509ee6d8703ac56c8e122ad0a5183bed",
+      "size": 8003
+    },
+    "tools/resemble_runtime/enhancer/univnet/univnet.py": {
+      "sha256": "5620e7a4375a4ca67dda3b9a9b1fc9c740dbc4cdafd84e3ce2dc3c1db901f237",
+      "size": 2399
+    },
+    "tools/resemble_runtime/enhancer/univnet/__init__.py": {
+      "sha256": "108fc0ab452d330ff7af5d96810ea69c8aa41b5647687f83f9062101212fe236",
+      "size": 237
+    },
+    "tools/resemble_runtime/enhancer/univnet/mrstft.py": {
+      "sha256": "3acaee520ca5c8078a42cbedff25df2deeca66a5343ba8af07c131d8e3ad89b5",
+      "size": 4450
+    },
+    "tools/resemble_runtime/enhancer/univnet/amp.py": {
+      "sha256": "4d20f567c8cc9cfdd4477fedcec5c3fe272744df68e108ee44b54ed6066b1af5",
+      "size": 3410
+    },
+    "tools/resemble_runtime/enhancer/lcfm/__init__.py": {
+      "sha256": "6e2ead3ed5de651f2d54fecfc47acd56ee58dd575afc9c5c576a928bd35bb562",
+      "size": 261
+    },
+    "tools/resemble_runtime/enhancer/lcfm/cfm.py": {
+      "sha256": "23c45e22d4cd74d43e1939fea0358c2fb78b246666c543b26f93d024589ea6ad",
+      "size": 8408
+    },
+    "tools/resemble_runtime/enhancer/lcfm/wn.py": {
+      "sha256": "a45abeced7086a16e042c6c104e32150dfa01ada422dcf73fb8cb51450709793",
+      "size": 3015
+    },
+    "tools/resemble_runtime/enhancer/lcfm/lcfm.py": {
+      "sha256": "429e5654c9960f97b131340df1c0aa5b7e3844f84cb6af6d8fa699814ba6ac81",
+      "size": 3123
+    },
+    "tools/resemble_runtime/enhancer/lcfm/irmae.py": {
+      "sha256": "64e393678da44474ce758b6c02367dbce5f1f0cb16a3b5c572fcd52871196e13",
+      "size": 3379
+    },
+    "tools/resemble_runtime/enhancer/univnet/alias_free_torch/resample.py": {
+      "sha256": "7c1d5a0a73cba912679e6c734d2468e4a1019bb46f25e1b1f423c03775f357ef",
+      "size": 1838
+    },
+    "tools/resemble_runtime/enhancer/univnet/alias_free_torch/__init__.py": {
+      "sha256": "40fee36aab57d40e823549ffc4f83b5750b2eccc752a4a24fb50fc25e2ff25df",
+      "size": 387
+    },
+    "tools/resemble_runtime/enhancer/univnet/alias_free_torch/filter.py": {
+      "sha256": "12deb810dfcc071536489263de2a7358b497519b52b75507cf9935ac5fb4182f",
+      "size": 2673
+    },
+    "configs/v1/40k.json": {
+      "sha256": "ca4055cf8875b9f34d293e33179bd548b828eeac2b39376752b62deb2398f66d",
+      "size": 1069
+    },
+    "configs/v1/32k.json": {
+      "sha256": "5a862d2ad474a0ff5c218630cc1b61fd85479a8b3938e73dff94d8b2380749da",
+      "size": 1071
+    },
+    "configs/v1/48k.json": {
+      "sha256": "f8ea51151a5827f8e6206a11e1db44cb79a349f4bb5f64a2afcfce075adc4c69",
+      "size": 1072
+    },
+    "configs/v2/32k.json": {
+      "sha256": "aeffdbc3e06a08f1af828cd910fdaf6c0c5f35808b14c2eea3edc732958829c3",
+      "size": 1067
+    },
+    "configs/v2/48k.json": {
+      "sha256": "c9b8aebbc3306130a00c65c7184809482c25943018e59df15e442e3fd94c9e14",
+      "size": 1069
+    },
+    "assets/apbwe/config.json": {
+      "sha256": "e6135b54f9746adf5ef9630c1393ad90dcc04d83685121d56918663da7e8c201",
+      "size": 542
+    },
+    "assets/apbwe/LICENSE.txt": {
+      "sha256": "ebb9bf8bb881d60baf37b56772ad9e83813286ecc8b0853914de9d15fe3fec66",
+      "size": 1066
+    },
+    "assets/apbwe/weights_LICENSE.txt": {
+      "sha256": "506d3a47a2c84814c8d6a84f0450a18fb9d67c03bb30d8b7e9d357d9540be2d3",
+      "size": 175
+    },
+    "assets/apbwe/THIRD_PARTY_NOTICES.txt": {
+      "sha256": "b3f51a6bab5acc2b3b158f85f76fbc41605b82c2695046ecad9b98a714ed5231",
+      "size": 1631
+    },
+    "assets/legal/terms.json": {
+      "sha256": "e4648a96dec49ad784bb7928c2fe06ed8b541ea4b6b6e8822528b5f8a9ed9d84",
+      "size": 6521
+    },
+    "assets/locales/en_status.json": {
+      "sha256": "d83f16bcf6f444a9bf0b88b8a919150a2628be57543dcb651739c093643601b2",
+      "size": 1628
+    },
+    "assets/locales/en_core.json": {
+      "sha256": "1dcb88470b7dfe49bf0212919857ef3d173445457d9ee58682b9ba308e7b784f",
+      "size": 10840
+    },
+    "assets/locales/en_edit.json": {
+      "sha256": "b4ab8643e7440d47653c79e8ac4462fc66cd0f4290f28c39403457abddb3e5b9",
+      "size": 11841
+    },
+    "assets/locales/en_audio.json": {
+      "sha256": "c3798c0b354f56b0f709b63eda154f1aab05d9a2b81cfd62e90db6dcb4222f77",
+      "size": 13068
+    },
+    "assets/locales/en_shortcuts.json": {
+      "sha256": "8a9af1e9c3101f817918e8b4c10eabc066156d0a3b4e55de646f970388780412",
+      "size": 1872
+    },
+    "assets/locales/en.json": {
+      "sha256": "5d5f6bdff17a9a9e224aadd539a393666cbd69cc6b732279f43cb39513018cc9",
+      "size": 5578
+    },
+    "assets/enhance/RESEMBLE_LICENSE.txt": {
+      "sha256": "f4f7ca80af15e1d06a99e92e268b4294b116c71e1ca10d7bcc02c36ff22b94b7",
+      "size": 1068
+    },
+    "assets/enhance/ALIAS_FREE_LICENSE.txt": {
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "size": 11357
+    },
+    "assets/enhance/hparams.json": {
+      "sha256": "96d36029f20e276d3630a2ab357deff822f41ed5888831bd023ff27d1bf571fa",
+      "size": 819
+    },
+    "assets/enhance/JULIUS_LICENSE.txt": {
+      "sha256": "60f83da40026e37e259b69158852384ff2ee20615d9103a3f86b6cff48784661",
+      "size": 1059
+    },
+    "assets/enhance/THIRD_PARTY_NOTICES.txt": {
+      "sha256": "711d72ddf61cb19ab796a0d38124bb4b0bb307298607d090a037059da37fc87c",
+      "size": 1416
+    },
+    "assets/rnnoise/PYRNNOISE_LICENSE.txt": {
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "size": 11357
+    },
+    "assets/rnnoise/RNNOISE_LICENSE.txt": {
+      "sha256": "45d37ca1cdb278c088e1aa85e0e65ca3a534ed86a28dcc96ca16810248a61d35",
+      "size": 1612
+    },
+    "assets/downloader/RUSTY_V8_LICENSE.txt": {
+      "sha256": "1c6356fb751d45f0c53093ebf8a7f5e580e802f51999178e19d60f3ec39e147d",
+      "size": 1078
+    },
+    "assets/downloader/DENO_LICENSE.md": {
+      "sha256": "f62497fffecc0852960c8d3e6934b9db86d16396e9b604072e923892cae3a588",
+      "size": 1074
+    },
+    "assets/downloader/deno_source.json": {
+      "sha256": "aff934bacc9e461354fc8f065b6994ac35df84391f822c3a5615394b305a1711",
+      "size": 492
+    },
+    "assets/downloader/V8_LICENSE.txt": {
+      "sha256": "6ab33af8774a0f396ee3aeeb761e3229057682d6f9fa7f572e390c2cb3a6e509",
+      "size": 3093
+    },
+    "infer/module/attentions.py": {
+      "sha256": "8820e6047353d99344fc73fbb6c69d85e4f61066fc498982cc895e9577d4519f",
+      "size": 15994
+    },
+    "infer/module/transforms.py": {
+      "sha256": "fb0d3320adf32ca0eaa44dd56e8922927f77ec3dd45c775e10c3da1704072c6a",
+      "size": 7458
+    },
+    "infer/module/modules.py": {
+      "sha256": "b1aa77b0921468a61492fa89ed1f1212cd22fee3caa551befe44d8ab359fd2f1",
+      "size": 17775
+    },
+    "infer/module/models.py": {
+      "sha256": "7f7c86fe4722b9eef09fffa865955b237887669a60ff67d62cd1219b628605b4",
+      "size": 37923
+    },
+    "infer/module/commons.py": {
+      "sha256": "132a907eff444907861e63684c04c88ae631d03707470858f7c53f857b0cc5c8",
+      "size": 5463
+    },
+    "infer/vc/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "infer/vc/pipeline.py": {
+      "sha256": "020038b9348d41133c8db82f5b972be2bef8a4e37c1a99e05b37826cff947cff",
+      "size": 14658
+    },
+    "infer/vc/utils.py": {
+      "sha256": "13dd0c749d22f73fb1962c6328036e5fd8600023640d25d1b1445e1fe07d58d3",
+      "size": 1849
+    },
+    "infer/vc/modules.py": {
+      "sha256": "16b47c42825f0aa6e4b0c4518d83ad874e1ecf73a8567832b75b9a8121d8a144",
+      "size": 13079
+    }
+  }
+}
