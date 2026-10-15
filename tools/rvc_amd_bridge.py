@@ -182,7 +182,11 @@ class VcRsBridge:
     def start(
         self, *, model: str, embedder: str, f0: str,
         input_device: str = "", output_device: str = "",
-        provider: str = "DirectML", chunk_ms: int = 500, pitch: float = 0.0
+        provider: str = "DirectML", chunk_ms: int = 500, pitch: float = 0.0,
+        rms_mix_rate: float = 0.0, silence_threshold: float = 0.0001,
+        denoiser: str = "off", passthrough: bool = False,
+        input_gain: float = 1.0, output_gain: float = 1.0,
+        extra_convert_ms: int = 100, speaker_id: int = 0
     ) -> None:
         if sys.platform != "win32":
             raise VcRsError("AMD vc-rs motoru şu anda yalnızca Windows x64 içindir.")
@@ -190,6 +194,19 @@ class VcRsBridge:
             raise VcRsError("AMD ses motoru zaten çalışıyor.")
         if provider not in PROVIDERS:
             raise VcRsError("Bilinmeyen GPU motoru: " + provider)
+        if denoiser not in ("off", "noise-gate", "rnnoise"):
+            raise VcRsError("Bu Rust sürümünde gürültü filtresi desteklenmiyor: " + denoiser)
+        if not (0.0 <= rms_mix_rate <= 1.0) or not (0 <= silence_threshold <= 1):
+            raise VcRsError("Ses yüksekliği/eşik ayarları geçersiz.")
+        if not (0.0 <= input_gain <= 8.0 and 0.0 <= output_gain <= 8.0):
+            raise VcRsError("Giriş/çıkış ses düzeyi geçersiz.")
+        if not (0 <= speaker_id <= 1024 and 20 <= extra_convert_ms <= 2000):
+            raise VcRsError("Ses modeli/ek bağlam değeri geçersiz.")
+        if provider == "MIGraphX (deneysel)":
+            raise VcRsError(
+                "MIGraphX için AMD Windows ML sağlayıcısı doğrulanamadı. "
+                "Bu sürümde güvenli DirectML sağlayıcısını seç."
+            )
         if not isinstance(chunk_ms, int) or not 20 <= chunk_ms <= 2000 or chunk_ms % 10:
             raise VcRsError("Chunk süresi 20–2000 ms aralığında 10'un katı olmalı.")
         exe = find_executable()
@@ -201,7 +218,16 @@ class VcRsBridge:
             "--model", str(voice), "--embedder", str(contentvec),
             "--f0-model", str(rmvpe), "--audio-backend", "wasapi",
             "--chunk-ms", str(chunk_ms), "--pitch-shift", str(float(pitch)),
+            "--rms-mix-rate", str(float(rms_mix_rate)),
+            "--silence-threshold", str(float(silence_threshold)),
+            "--input-gain", str(float(input_gain)),
+            "--output-gain", str(float(output_gain)),
+            "--extra-convert-ms", str(int(extra_convert_ms)),
+            "--speaker-id", str(int(speaker_id)),
+            "--denoiser", denoiser,
         ]
+        if passthrough:
+            cmd.append("--passthrough")
         if input_device.strip():
             cmd.extend(["--input", input_device.strip()])
         if output_device.strip():
