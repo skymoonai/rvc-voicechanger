@@ -221,11 +221,13 @@ class AmdEdition:
             install_capture(self.window.owner.studio_tools, self)
         except Exception as exc:
             self._status("AMD dosya dönüştürme bağlanamadı: " + str(exc))
-        # Soundpad remains in the original UI, but microphone overlay comes
-        # from the PyTorch callback; explicitly mark incompatible route.
-        page = getattr(self.window, "soundpad_page", None)
-        if page is not None:
-            page.setToolTip("AMD Edition: Soundpad'in mikrofon içine mikslenmesi henüz vc-rs motoruna bağlı değildir.")
+        # Stock Soundpad already has an independent mic lane. Under AMD it
+        # must target the exact same shared WASAPI output as the Rust worker.
+        try:
+            from tools.rvc_amd_soundpad import install_soundpad
+            install_soundpad(self.window.owner.soundpad, self)
+        except Exception as exc:
+            self._status("AMD Soundpad cihaz eşleştirme hatası: " + str(exc))
 
     def _async(self, fn, label):
         def run():
