@@ -59,11 +59,12 @@ class AmdEditionTests(unittest.TestCase):
             command = make_command(fake, Path("input.wav"), Path("output.wav"), Path("model.onnx"),
                                    {"pitch": 24, "rms_mix_rate": .7, "threhold": -30, "amd_chunk_ms": 200},
                                    rnnoise=True)
-        for flag in ("--pitch-shift", "--rms-mix-rate", "--silence-threshold",
+        for flag in ("--pitch-shift", "--rms-mix-rate",
                      "--denoiser", "--chunk-ms", "--provider"):
             self.assertIn(flag, command)
         self.assertEqual(command[command.index("--pitch-shift") + 1], "24.0")
         self.assertEqual(command[command.index("--denoiser") + 1], "rnnoise")
+        self.assertNotIn("--silence-threshold", command)  # realtime-only vc-rs CLI option
 
     def test_meters_and_threshold(self):
         self.assertAlmostEqual(db_to_linear(-20), .1)
