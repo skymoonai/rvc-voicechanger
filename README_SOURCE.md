@@ -26,6 +26,10 @@ For NVIDIA CUDA, use the corresponding `requirments_cu118_py312.txt` or
 `requirments_cu128_py312.txt` file **instead of** the CPU dependency file.
 The `requirments_` spelling is retained to match the existing application and installer.
 
+**AMD ROCm (Windows 11) experimental:** See [AMD ROCm Windows guide](docs/AMD_ROCM_WINDOWS.md)
+for supported hardware, a separate Python 3.12 environment, GPU checks and the
+known untested real-time limitations. This is **not** part of the current installer.
+
 **Important:** This is a **source-only distribution**, not a standalone runnable
 bundle. Large HuBERT/RMVPE/AP-BWE weights, user voice models, downloaded model
 indices, `deno.exe`, `rnnoise.dll`, installed dependencies and user data are
