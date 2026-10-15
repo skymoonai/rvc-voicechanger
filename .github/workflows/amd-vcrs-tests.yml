@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile changed modules
-        run: python -m py_compile tools/rvc_amd_*.py tools/rvc_modern_qt.py
+        run: python -m compileall -q tools/rvc_amd_bridge.py tools/rvc_amd_extension.py tools/rvc_amd_assets.py tools/rvc_amd_devices.py tools/rvc_amd_convert.py tools/rvc_amd_metrics.py tools/rvc_modern_qt.py
       - name: Run sidecar unit tests
         run: python -m unittest discover -s tests -p 'test_amd*.py' -v
   powershell-parse:
