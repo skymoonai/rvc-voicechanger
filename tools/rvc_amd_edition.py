@@ -130,8 +130,18 @@ class AmdEdition:
         # estimator; do not let unused sliders mislead AMD users.
         self._hide_slider("index_rate")
         self._hide_slider("formant")
-        self._hide_slider("sr_model")
-        self._hide_slider("sr_device")
+        # Sampling-rate radio buttons share the entire input/output card;
+        # hide only these controls, never their parent or device selectors.
+        for key in ("sr_model", "sr_device"):
+            radio = self.w(key)
+            if radio is not None:
+                radio.hide()
+        sample_stat = self.w("sr_stream")
+        if sample_stat is not None:
+            sample_stat.hide()
+        for label in self.window.root.findChildren(QLabel):
+            if label.text().strip() == "ÖRNEKLEME":
+                label.hide()
         for name in ("pm", "fcpe"):
             w = self.w(name)
             if w is not None:
