@@ -212,6 +212,7 @@ class AmdPanel:
         self._timer = QTimer(root)
         self._timer.timeout.connect(self.tick)
         self._timer.start(200)
+        self._connect_main_audio()
         self.refresh_devices()
         # User requested first-open automatic setup. Worker may fetch ~741MB.
         self.prepare_models()
@@ -281,6 +282,34 @@ class AmdPanel:
         from tools.rvc_amd_devices import list_wasapi
         return list_wasapi()
 
+    def _connect_main_audio(self):
+        """Keep AMD WASAPI selectors aligned with the existing Giriş/Çıkış tab.
+
+        Main RVC Studio PortAudio device names sometimes differ from CPAL/WASAPI.
+        In that case retain the explicit AMD combo; never silently choose a
+        similarly named but ambiguous device.
+        """
+        for key, combo in (
+            ("sg_input_device", self.input_device),
+            ("sg_output_device", self.output_device),
+        ):
+            handle = getattr(self.window, "widgets", {}).get(key)
+            field = getattr(handle, "widget", None)
+            if field is not None and hasattr(field, "currentTextChanged"):
+                field.currentTextChanged.connect(
+                    lambda name, target=combo: self._match_main_device(target, name)
+                )
+
+    @staticmethod
+    def _match_main_device(combo, main_name):
+        name = str(main_name or "").strip().casefold()
+        if not name:
+            return
+        matches = [i for i in range(1, combo.count())
+                   if str(combo.itemData(i) or "").casefold() == name]
+        if len(matches) == 1:
+            combo.setCurrentIndex(matches[0])
+
     def _select_device(self, combo, preferred):
         i = combo.findData(preferred)
         if i < 0 and preferred:
@@ -302,6 +331,14 @@ class AmdPanel:
         # names, which may not equal vc-rs WASAPI strings; do not guess.
         self._select_device(self.input_device, current_in)
         self._select_device(self.output_device, current_out)
+        if not current_in:
+            handle = getattr(self.window, "widgets", {}).get("sg_input_device")
+            if handle is not None:
+                self._match_main_device(self.input_device, handle.get())
+        if not current_out:
+            handle = getattr(self.window, "widgets", {}).get("sg_output_device")
+            if handle is not None:
+                self._match_main_device(self.output_device, handle.get())
         if not input_names:
             self._say("WASAPI mikrofonu bulunamadı. Sanal makine mikrofon erişimini kontrol et.")
 
