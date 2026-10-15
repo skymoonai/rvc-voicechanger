@@ -92,7 +92,7 @@ except Exception as _amd_extension_error:
     print("AMD extension initialization failed: " + str(_amd_extension_error), flush=True)
 # RVC_STUDIO_AMD_EXTENSION_V2_END
 '@
-        [IO.File]::WriteAllText($ui, ($old.TrimEnd([char[]]@("\r", "\n")) + "`r`n" + $hook + "`r`n"), $utf8)
+        [IO.File]::WriteAllText($ui, ($old.TrimEnd([char[]]@(13, 10)) + "`r`n" + $hook + "`r`n"), $utf8)
     }
     # Parse, do not import or execute the application in this step.
     $python = Join-Path $Target '.venv\Scripts\python.exe'
