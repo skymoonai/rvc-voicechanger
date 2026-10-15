@@ -2,19 +2,26 @@ name: AMD vc-rs preview checks
 on:
   pull_request:
     paths:
-      - "tools/rvc_amd_bridge.py"
+      - "tools/rvc_amd_*.py"
       - "tools/rvc_modern_qt.py"
-      - "tests/test_amd_bridge.py"
+      - "tools/bin/**"
+      - "tools/rust/**"
+      - "tests/test_amd*.py"
       - "scripts/install_vcrs_amd.ps1"
+      - "scripts/install_amd_ui_extension.ps1"
       - ".github/workflows/amd-vcrs-tests.yml"
   push:
     branches:
       - "feature/amd-vcrs-preview"
     paths:
-      - "tools/rvc_amd_bridge.py"
+      - "tools/rvc_amd_*.py"
       - "tools/rvc_modern_qt.py"
-      - "tests/test_amd_bridge.py"
+      - "tools/bin/**"
+      - "tools/rust/**"
+      - "tests/test_amd*.py"
       - "scripts/install_vcrs_amd.ps1"
+      - "scripts/install_amd_ui_extension.ps1"
+      - ".github/workflows/amd-vcrs-tests.yml"
 
 jobs:
   python-check:
@@ -25,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile changed modules
-        run: python -m py_compile tools/rvc_amd_bridge.py tools/rvc_amd_extension.py tools/rvc_modern_qt.py
+        run: python -m py_compile tools/rvc_amd_*.py tools/rvc_modern_qt.py
       - name: Run sidecar unit tests
         run: python -m unittest discover -s tests -p 'test_amd*.py' -v
   powershell-parse:
@@ -71,6 +78,25 @@ jobs:
             if (!$help.Contains($switch)) { throw "vc-rs missing expected option: $switch" }
           }
           Write-Host 'Pinned vc-rs CLI options verified.'
+      - uses: actions/checkout@v4
+        with:
+          repository: shirohata/vc-rs
+          ref: v0.5.3
+          path: _upstream_fixture
+      - name: Convert a real RVC v2 F0 test checkpoint inside the Rust helper
+        shell: pwsh
+        run: |
+          $tool = Join-Path $PWD 'tools/bin/rvcstudio-convert.exe'
+          if (!(Test-Path $tool)) { throw 'Native Rust PTH converter missing' }
+          $pth = Join-Path $env:RUNNER_TEMP 'tiny_v2_f0.pth'
+          Copy-Item '_upstream_fixture/crates/vc-convert/tests/fixtures/tiny_v2_f0.pth' $pth
+          & $tool $pth
+          if ($LASTEXITCODE -ne 0) { throw 'Native PTH->ONNX conversion failed' }
+          $onnx = [IO.Path]::ChangeExtension($pth, '.onnx')
+          if (!(Test-Path $onnx)) { throw 'ONNX output was not created' }
+          $size = (Get-Item $onnx).Length
+          if ($size -lt 10000) { throw "Output is unexpectedly short: $size" }
+          Write-Host "Native converter produced a $size byte ONNX model."
 
   amd-extension-install-smoke:
     runs-on: windows-latest
