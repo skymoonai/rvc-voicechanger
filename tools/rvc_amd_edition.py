@@ -337,7 +337,11 @@ class AmdEdition:
             self.convert_model(source)
             self._status("Profil kaydedildi. PTH NVIDIA için, ONNX AMD için kullanılacak.")
             if was_active:
-                self._pending_start = True
+                if Path(source).with_suffix(".onnx").is_file():
+                    from PySide6.QtCore import QTimer
+                    QTimer.singleShot(450, self.start)
+                else:
+                    self._pending_start = True
         except Exception as exc:
             self._status("Profil eklenemedi: " + str(exc))
 
