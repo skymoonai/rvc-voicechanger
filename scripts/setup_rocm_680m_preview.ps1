@@ -6,6 +6,7 @@
 param(
     [switch]$AcceptNightlyRisk,
     [switch]$AllowUnrecognizedAdapter,
+    [switch]$AllowVirtualizedGpu,
     [switch]$SkipInstall,
     [string]$TargetGfx = 'gfx1035'
 )
@@ -42,6 +43,26 @@ $gpuLabel = $gpu -join '; '
 if ($cpuLabel -notmatch '(?i)7735HS|6800H|6800U|6900HS|6900HX|6850U' -and
     $gpuLabel -notmatch '(?i)680M' -and -not $AllowUnrecognizedAdapter) {
     throw 'Could not identify Radeon 680M/gfx1035. For generic AppSandbox AMD Radeon(TM) Graphics use -AllowUnrecognizedAdapter, but HIP computation must still pass.'
+}
+# Hyper-V GPU-PV / AppSandbox DirectX exposure does NOT prove HIP/HSA
+# availability. Warn and guard against downloading a ~1GB nightly into a
+# guest with only an inbox Microsoft display driver, unless user opts in.
+$driverRows = @(
+    Get-CimInstance Win32_PnPSignedDriver |
+    Where-Object { $_.DeviceName -match '(?i)AMD Radeon|Radeon\(TM\)' } |
+    Select-Object DeviceName, DriverProviderName, DriverVersion
+)
+if ($driverRows.Count -gt 0) {
+    foreach ($item in $driverRows) {
+        Write-Host ('Display driver: ' + $item.DeviceName + ' / provider: ' +
+            $item.DriverProviderName + ' / version: ' + $item.DriverVersion)
+    }
+    $microsoftOnly = -not @($driverRows | Where-Object {
+        $_.DriverProviderName -match '(?i)Advanced Micro Devices|AMD'
+    }).Count
+    if ($microsoftOnly -and -not $AllowVirtualizedGpu) {
+        throw 'Only a non-AMD signed display driver is visible. In AppSandbox this probably means GPU-PV without HIP; ROCm wheels would download but likely cannot execute. Pass -AllowVirtualizedGpu ONLY for an explicit unsupported experiment.'
+    }
 }
 if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
     throw 'Python Windows Launcher is missing. Install Python 3.12 x64 first.'
