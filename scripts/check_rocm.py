@@ -1,5 +1,6 @@
 """Smoke-test ROCm PyTorch on Windows; does not load RVC model weights."""
 import sys
+import os
 
 
 def main():
@@ -32,6 +33,13 @@ def main():
             assert spectrum.shape[0] == 257
             assert torch.isfinite(filtered).all().item()
         props = torch.cuda.get_device_properties(device)
+        arch = str(getattr(props, "gcnArchName", "") or "")
+        required = os.environ.get("RVC_ROCM_REQUIRE_GFX", "").strip().lower()
+        if required and not (arch.lower() == required or arch.lower().startswith(required + ":")):
+            print(f"ROCm target mismatch: HIP reported {arch or '<unknown>'}; expected {required}. "
+                  "Do not force another GFX architecture with HSA_OVERRIDE_GFX_VERSION.",
+                  file=sys.stderr)
+            return 6
     except Exception as exc:
         print("ROCm GPU convolution/STFT inference test failed:", repr(exc), file=sys.stderr)
         return 5
@@ -39,6 +47,8 @@ def main():
     print("ROCm PyTorch:", torch.__version__, "HIP:", hip)
     print("AMD GPU:", torch.cuda.get_device_name(0))
     print("ROCm architecture:", getattr(props, "gcnArchName", "unavailable"))
+    print("Reported total HIP device memory (may be misleading for integrated GPUs):",
+          round(props.total_memory / 1024**3, 2), "GiB")
     print("FP32 convolution and STFT: PASS")
     print("RVC Studio real-time voice test: NOT YET RUN")
     return 0
