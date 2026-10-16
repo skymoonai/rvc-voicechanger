@@ -108,7 +108,7 @@ class AmdEdition:
 
     def _configure_voice_page(self):
         from PySide6.QtCore import Qt
-        from PySide6.QtWidgets import QLabel, QPushButton, QSlider
+        from PySide6.QtWidgets import QLabel, QPushButton, QSlider, QComboBox
         # Reuse stock model/profile path and browser. Users can select ONNX and
         # supported PTH; PTH is converted offline before vc-rs launches.
         model_widget = self.w("pth_path")
