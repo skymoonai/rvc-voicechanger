@@ -47,3 +47,19 @@ def list_wasapi(timeout: int = 18) -> tuple[list[str], list[str]]:
         raise RuntimeError((result.stderr or result.stdout or
                             "WASAPI cihaz listesi alınamadı.")[:1000])
     return parse_devices(result.stdout)
+
+
+def doctor_defaults(timeout: int = 15) -> tuple[str, str]:
+    """Read CPAL defaults from vc-rs itself (not an unrelated PortAudio API)."""
+    exe = find_executable()
+    result = subprocess.run(
+        [str(exe), "doctor"], cwd=str(exe.parent), capture_output=True,
+        text=True, encoding="utf-8", errors="replace", timeout=timeout,
+        creationflags=CREATION_FLAGS, check=False
+    )
+    for row in result.stdout.splitlines():
+        if "default-input=" in row and " default-output=" in row:
+            line = row.split("default-input=", 1)[1]
+            name_in, name_out = line.split(" default-output=", 1)
+            return name_in.strip(), name_out.strip()
+    return "", ""
