@@ -122,7 +122,7 @@ class VcRsBridge:
         self._messages = deque(maxlen=100)
         self._lock = threading.Lock()
         self._stop_requested = False
-        self.metrics = {"infer_ms": None, "processing_ms": None, "content_delay_ms": None, "input_rms": None, "output_rms": None}
+        self.metrics = {"infer_ms": None, "processing_ms": None, "content_delay_ms": None, "input_rms": None, "output_rms": None, "input_overruns": 0, "output_underruns": 0, "output_dropped_samples": 0}
         self._metrics_lock = threading.Lock()
 
     def _log(self, line: str) -> None:
@@ -156,6 +156,9 @@ class VcRsBridge:
                 "processing_ms": processing / 1000.0 if processing is not None else None,
                 "content_delay_ms": delay,
                 "input_rms": in_rms, "output_rms": out_rms,
+                "input_overruns": int(take("input_overruns") or 0),
+                "output_underruns": int(take("output_underruns") or 0),
+                "output_dropped_samples": int(take("output_dropped_samples") or 0),
             }
 
     def snapshot_metrics(self) -> dict:
@@ -189,7 +192,8 @@ class VcRsBridge:
         rms_mix_rate: float = 0.0, silence_threshold: float = 0.0001,
         denoiser: str = "off", passthrough: bool = False,
         input_gain: float = 1.0, output_gain: float = 1.0,
-        extra_convert_ms: int = 100, speaker_id: int = 0
+        extra_convert_ms: int = 100, crossfade_ms: int = 85,
+        speaker_id: int = 0
     ) -> None:
         if sys.platform != "win32":
             raise VcRsError("AMD vc-rs motoru şu anda yalnızca Windows x64 içindir.")
@@ -203,8 +207,9 @@ class VcRsBridge:
             raise VcRsError("Ses yüksekliği/eşik ayarları geçersiz.")
         if not (0.0 <= input_gain <= 8.0 and 0.0 <= output_gain <= 8.0):
             raise VcRsError("Giriş/çıkış ses düzeyi geçersiz.")
-        if not (0 <= speaker_id <= 1024 and 20 <= extra_convert_ms <= 2000):
-            raise VcRsError("Ses modeli/ek bağlam değeri geçersiz.")
+        if not (0 <= speaker_id <= 1024 and 20 <= extra_convert_ms <= 2000
+                and 0 <= crossfade_ms <= 500):
+            raise VcRsError("Ses modeli, crossfade veya ek bağlam değeri geçersiz.")
         if provider == "MIGraphX (deneysel)":
             raise VcRsError(
                 "MIGraphX için AMD Windows ML sağlayıcısı doğrulanamadı. "
@@ -226,6 +231,7 @@ class VcRsBridge:
             "--input-gain", str(float(input_gain)),
             "--output-gain", str(float(output_gain)),
             "--extra-convert-ms", str(int(extra_convert_ms)),
+            "--crossfade-ms", str(int(crossfade_ms)),
             "--speaker-id", str(int(speaker_id)),
             "--denoiser", denoiser,
         ]
