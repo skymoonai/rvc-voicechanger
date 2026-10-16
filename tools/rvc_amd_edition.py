@@ -54,6 +54,8 @@ class AmdEdition:
         self._log_window = getattr(window, "log_view", None)
         self._input_names = []
         self._output_names = []
+        self._default_input_name = ""
+        self._default_output_name = ""
         self._last_start = 0
         self._restart_serial = 0
         self._restart_pending = False
@@ -296,8 +298,13 @@ class AmdEdition:
 
     @staticmethod
     def _list_devices():
-        from tools.rvc_amd_devices import list_wasapi
-        return list_wasapi()
+        from tools.rvc_amd_devices import list_wasapi, doctor_defaults
+        mic, output = list_wasapi()
+        try:
+            default_in, default_out = doctor_defaults()
+        except Exception:
+            default_in, default_out = "", ""
+        return mic, output, default_in, default_out
 
     def refresh_devices(self):
         if not self._listing:
@@ -316,8 +323,14 @@ class AmdEdition:
             ), "assets"
         )
 
-    def _populate_devices(self, mic, speakers):
+    def _populate_devices(self, mic, speakers, default_input="", default_output=""):
         self._input_names, self._output_names = mic, speakers
+        self._default_input_name, self._default_output_name = default_input, default_output
+        if default_input and default_input.casefold() == default_output.casefold():
+            self._status(
+                "Uyarı: Windows varsayılan mikrofon ve ses çıkışı aynı cihaz: "
+                + default_input + ". Aynı VAC hattıyla geri besleme oluşabilir."
+            )
         for key, names, pref in (
             ("sg_input_device", mic, self._cfg.get("input", "")),
             ("sg_output_device", speakers, self._cfg.get("output", "")),
@@ -429,15 +442,20 @@ class AmdEdition:
         raise VcRsError("RVC v2/F0 PTH veya geçerli bir ONNX dosyası seç.")
 
     def _start_args(self, model):
-        from tools.rvc_amd_quality import quality_settings, detection_threshold
+        from tools.rvc_amd_quality import (quality_settings, detection_threshold,
+                                           check_audio_feedback)
         noise = getattr(self.window, "noise_panel", None)
         rnnoise = bool(noise.enabled.isChecked()) if noise else False
         mode = "rnnoise" if rnnoise else "off"
         quality = quality_settings(self.quality.currentData(), self.chunk.value() * 10)
+        input_device = str(self.read_value("sg_input_device", "") or "")
+        output_device = str(self.read_value("sg_output_device", "") or "")
+        check_audio_feedback(input_device, output_device,
+                             self._default_input_name, self._default_output_name)
         return dict(
             model=model, embedder=self._support_paths[0], f0=self._support_paths[1],
-            input_device=str(self.read_value("sg_input_device", "") or ""),
-            output_device=str(self.read_value("sg_output_device", "") or ""),
+            input_device=input_device,
+            output_device=output_device,
             provider="DirectML", **quality,
             pitch=float(self.read_value("pitch", 0)),
             rms_mix_rate=float(self.read_value("rms_mix_rate", 0)),
