@@ -32,6 +32,9 @@ def make_command(edition, source: Path, target: Path, model: Path, settings: dic
     if not edition._assets_ready:
         raise RuntimeError("ContentVec ve RMVPE henüz hazır değil.")
     exe = find_executable()
+    from tools.rvc_amd_quality import quality_settings
+    preset = getattr(getattr(edition, "quality", None), "currentData", lambda: "netlik")() or "netlik"
+    quality = quality_settings(preset, int(settings.get("amd_chunk_ms", 400)))
     command = [
         str(exe), "wav",
         "--model", str(model),
@@ -42,7 +45,9 @@ def make_command(edition, source: Path, target: Path, model: Path, settings: dic
         "--output", str(target),
         "--pitch-shift", str(float(settings.get("pitch", 0))),
         "--rms-mix-rate", str(max(0., min(1., float(settings.get("rms_mix_rate", 0))))),
-        "--chunk-ms", str(max(50, min(1000, int(settings.get("amd_chunk_ms", 200))))),
+        "--chunk-ms", str(quality["chunk_ms"]),
+        "--crossfade-ms", str(quality["crossfade_ms"]),
+        "--extra-convert-ms", str(quality["extra_convert_ms"]),
     ]
     if rnnoise:
         command.extend(["--denoiser", "rnnoise"])
