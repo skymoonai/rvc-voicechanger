@@ -77,3 +77,23 @@ def likely_quality_problems(metrics: dict, chunk_ms: int, denoiser: str,
         if (metrics.get(metric) or 0) > 0:
             notes.append(label + " algılandı; ses bozulabilir.")
     return notes
+
+
+def check_audio_feedback(input_name: str, output_name: str,
+                         default_input: str = "", default_output: str = "") -> None:
+    """Reject the same WASAPI endpoint on both sides of live conversion.
+
+    Accepts explicit device names and vc-rs doctor's current default labels.
+    On a virtual cable this can form a destructive RVC feedback loop:
+    converted audio is fed back to the content/pitch estimator.
+    """
+    source = (input_name or default_input).strip().casefold()
+    destination = (output_name or default_output).strip().casefold()
+    if source and destination and source == destination:
+        raise ValueError(
+            "Mikrofon girişi ile ses çıkışı aynı cihaz: "
+            + (input_name or default_input)
+            + ". Ses döngüsü sesi peltek/boğuk yapabilir. "
+            + "Mikrofon için VAC'nin kayıt ucunu, çıkış için başka "
+            + "bir kulaklık veya farklı sanal kabloyu seç."
+        )
