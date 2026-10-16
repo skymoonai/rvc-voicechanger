@@ -37,8 +37,10 @@ if (-not @($gpu | Where-Object { $_ -match '(?i)AMD|Radeon' }).Count) {
 # Radeon 680M may show only "AMD Radeon(TM) Graphics" in AppSandbox, so
 # permit that ONLY via explicit -AllowUnrecognizedAdapter. The REAL HIP test
 # below is mandatory and never overridden.
-if ($cpu -notmatch '(?i)7735HS|6800H|6800U|6900HS|6900HX|6850U' -and
-    $gpu -notmatch '(?i)680M' -and -not $AllowUnrecognizedAdapter) {
+$cpuLabel = $cpu -join '; '
+$gpuLabel = $gpu -join '; '
+if ($cpuLabel -notmatch '(?i)7735HS|6800H|6800U|6900HS|6900HX|6850U' -and
+    $gpuLabel -notmatch '(?i)680M' -and -not $AllowUnrecognizedAdapter) {
     throw 'Could not identify Radeon 680M/gfx1035. For generic AppSandbox AMD Radeon(TM) Graphics use -AllowUnrecognizedAdapter, but HIP computation must still pass.'
 }
 if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
@@ -62,28 +64,28 @@ function Invoke-Python {
 Set-Location -LiteralPath $root
 if (-not $SkipInstall) {
     Write-Host 'Installing application dependencies in its separate .venv-rocm-gfx1035, NOT the NVIDIA/AMD/RVC Studio base folder.'
-    Invoke-Python @('-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools>=75,<81', 'wheel')
-    Invoke-Python @('-m', 'pip', 'install', '-r', 'requirments_rocm_py312.txt')
+    Invoke-Python -Parameters @('-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools>=75,<81', 'wheel')
+    Invoke-Python -Parameters @('-m', 'pip', 'install', '-r', 'requirments_rocm_py312.txt')
     # Explicitly allow TheRock pre-release wheel packages for the *specific*
     # iGPU gfx1035. Do not automatically modify the Windows display driver.
     # No gfx override or fake CUDA fallback. The PyTorch wheel may not be
     # published for every Windows/nightly date, in which case setup fails.
     $index = 'https://nightly.repo.amd.com/rocm/whl-next/'
     Write-Warning 'Installing large, experimental AMD TheRock ROCm/PyTorch Windows nightly wheels. They may be unstable or unavailable.'
-    Invoke-Python @(
+    Invoke-Python -Parameters @(
         '-m', 'pip', 'install', '--pre',
         '--index-url', $index,
         'torch[device-gfx1035]',
         'torchvision[device-gfx1035]',
         'torchaudio'
     )
-    Invoke-Python @('-m', 'pip', 'check')
+    Invoke-Python -Parameters @('-m', 'pip', 'check')
 }
 $env:RVC_RUNTIME_PROFILE = 'rocm'
 $env:RVC_CUDA_GRAPH = '0'
 $env:RVC_ROCM_REQUIRE_GFX = 'gfx1035'
 Write-Host 'Running mandatory GPU compute / architecture preflight.'
-Invoke-Python @('scripts/check_rocm.py')
+Invoke-Python -Parameters @('scripts/check_rocm.py')
 Write-Host ''
 Write-Host 'ROCm gfx1035 preflight passed. RVC Studio voice model inference is STILL unverified.' -ForegroundColor Green
 Write-Host 'Start (from this source checkout): powershell.exe -ExecutionPolicy Bypass -File .\scripts\run_rocm_680m_preview.ps1'
