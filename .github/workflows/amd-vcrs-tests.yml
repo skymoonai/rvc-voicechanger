@@ -39,7 +39,7 @@ jobs:
       - name: Install PySide6 for offscreen AMD interface smoke test
         run: python -m pip install --disable-pip-version-check "PySide6>=6.7,<7"
       - name: Compile changed modules
-        run: python -m compileall -q tools/rvc_amd_bridge.py tools/rvc_amd_extension.py tools/rvc_amd_assets.py tools/rvc_amd_devices.py tools/rvc_amd_convert.py tools/rvc_amd_metrics.py tools/rvc_amd_edition.py tools/rvc_amd_tasks.py tools/rvc_amd_monitor.py tools/rvc_amd_soundpad.py tools/rvc_modern_qt.py
+        run: python -m compileall -q tools/rvc_amd_bridge.py tools/rvc_amd_extension.py tools/rvc_amd_assets.py tools/rvc_amd_devices.py tools/rvc_amd_convert.py tools/rvc_amd_metrics.py tools/rvc_amd_edition.py tools/rvc_amd_quality.py tools/rvc_amd_tasks.py tools/rvc_amd_monitor.py tools/rvc_amd_soundpad.py tools/rvc_modern_qt.py
       - name: Run sidecar unit tests
         run: python -m unittest discover -s tests -p 'test_amd*.py' -v
   powershell-parse:
@@ -91,10 +91,13 @@ jobs:
           foreach ($switch in @('--provider','--model','--embedder','--f0-model','--input','--output','--chunk-ms','--pitch-shift')) {
             if (!$help.Contains($switch)) { throw "vc-rs missing expected option: $switch" }
           }
+          foreach ($switch in @('--crossfade-ms', '--extra-convert-ms', '--silence-threshold')) {
+            if (!$help.Contains($switch)) { throw "vc-rs realtime missing speech-quality option: $switch" }
+          }
           Write-Host 'Pinned vc-rs CLI options verified.'
           $wavHelp = (& $cli wav --help | Out-String)
           if ($LASTEXITCODE -ne 0) { throw 'vc-rs wav --help failed' }
-          foreach ($switch in @('--provider','--model','--embedder','--f0-model','--input','--output','--chunk-ms','--pitch-shift','--rms-mix-rate','--denoiser')) {
+          foreach ($switch in @('--provider','--model','--embedder','--f0-model','--input','--output','--chunk-ms','--crossfade-ms','--extra-convert-ms','--pitch-shift','--rms-mix-rate','--denoiser')) {
             if (!$wavHelp.Contains($switch)) { throw "vc-rs WAV missing option: $switch" }
           }
           if ($wavHelp.Contains('--silence-threshold')) { Write-Host 'Optional WAV silence threshold is supported.' }
