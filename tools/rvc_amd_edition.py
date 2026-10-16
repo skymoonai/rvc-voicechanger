@@ -57,6 +57,7 @@ class AmdEdition:
         self._last_start = 0
         self._restart_serial = 0
         self._restart_pending = False
+        self._quality_warning_seen = set()
         self._QLabel = QLabel
 
         self.monitor = ConvertedVoiceMonitor(self._status)
@@ -169,26 +170,54 @@ class AmdEdition:
             parent = self.window.root
 
         chunk_row = parent.parentWidget().layout() if parent.parentWidget() else None
-        self.chunk_caption = QLabel("Parça / Chunk: 200 ms")
+        from tools.rvc_amd_quality import PRESETS, DEFAULT_PRESET
+        self.quality_caption = QLabel("Konuşma kalitesi")
+        self.quality = QComboBox()
+        for code, setting in PRESETS.items():
+            self.quality.addItem(setting.label, code)
+        selected_quality = str(self._cfg.get("quality", DEFAULT_PRESET))
+        self.quality.setCurrentIndex(max(0, self.quality.findData(selected_quality)))
+        self.chunk_caption = QLabel("Ses parçası / Chunk: 400 ms")
         self.chunk = QSlider(Qt.Orientation.Horizontal)
         self.chunk.setMinimum(5)
         self.chunk.setMaximum(100)
         self.chunk.setSingleStep(1)
         self.chunk.setPageStep(5)
-        start_chunk = max(50, min(1000, int(self._cfg.get("chunk_ms", 200))))
+        # An old experimental 200 ms setting should not silently override
+        # the new *clarity-first* default. Respect the persisted chunk only
+        # if the user has saved one of these explicit quality presets.
+        default_chunk = PRESETS[self.quality.currentData()].chunk_ms
+        saved_chunk = self._cfg.get("chunk_ms", default_chunk) if "quality" in self._cfg else default_chunk
+        start_chunk = max(50, min(1000, int(saved_chunk)))
         self.chunk.setValue(start_chunk // 10)
         self.chunk_caption.setText(f"Parça / Chunk: {self.chunk.value() * 10} ms")
         self.chunk.valueChanged.connect(
             lambda value: self.chunk_caption.setText(f"Parça / Chunk: {value * 10} ms")
         )
         self.chunk.valueChanged.connect(self.schedule_restart)
+        self.quality.currentIndexChanged.connect(self._quality_changed)
         if chunk_row is not None:
+            chunk_row.addWidget(self.quality_caption)
+            chunk_row.addWidget(self.quality)
             chunk_row.addWidget(self.chunk_caption)
             chunk_row.addWidget(self.chunk)
+            explanation = QLabel(
+                "Net konuşma: daha uzun bağlam, daha kısa ses geçişleri. "
+                "Pelteklik varsa RNNoise'u kapalı, ses algılama eşiğini -60 dB tut."
+            )
+            explanation.setWordWrap(True)
+            explanation.setProperty("rvc_i18n_skip", True)
+            chunk_row.addWidget(explanation)
         self.status_label = QLabel("AMD DirectML modelleri hazırlanıyor…")
         self.status_label.setWordWrap(True)
         if chunk_row is not None:
             chunk_row.addWidget(self.status_label)
+
+    def _quality_changed(self, *_args):
+        from tools.rvc_amd_quality import PRESETS
+        preset = PRESETS[self.quality.currentData()]
+        self.chunk.setValue(preset.chunk_ms // 10)
+        self.schedule_restart()
 
     def _configure_device_page(self):
         from PySide6.QtWidgets import QComboBox
@@ -215,6 +244,12 @@ class AmdEdition:
         noise = getattr(self.window, "noise_panel", None)
         if noise is not None:
             if hasattr(noise, "enabled"):
+                # Old NVIDIA RNNoise settings could be left enabled from a
+                # different algorithm. Quality-first AMD starts *without*
+                # speech de-noising unless deliberately enabled in this build.
+                from PySide6.QtCore import QSignalBlocker
+                with QSignalBlocker(noise.enabled):
+                    noise.enabled.setChecked(str(self._cfg.get("rnnoise", "0")) == "1")
                 noise.enabled.toggled.connect(self.schedule_restart)
             # Native vc-rs RNNoise works in Rust, not through old Python
             # NoiseFilter callbacks. Strength is not exposed by Rust CLI.
@@ -394,17 +429,19 @@ class AmdEdition:
         raise VcRsError("RVC v2/F0 PTH veya geçerli bir ONNX dosyası seç.")
 
     def _start_args(self, model):
+        from tools.rvc_amd_quality import quality_settings, detection_threshold
         noise = getattr(self.window, "noise_panel", None)
         rnnoise = bool(noise.enabled.isChecked()) if noise else False
         mode = "rnnoise" if rnnoise else "off"
+        quality = quality_settings(self.quality.currentData(), self.chunk.value() * 10)
         return dict(
             model=model, embedder=self._support_paths[0], f0=self._support_paths[1],
             input_device=str(self.read_value("sg_input_device", "") or ""),
             output_device=str(self.read_value("sg_output_device", "") or ""),
-            provider="DirectML", chunk_ms=self.chunk.value() * 10,
+            provider="DirectML", **quality,
             pitch=float(self.read_value("pitch", 0)),
             rms_mix_rate=float(self.read_value("rms_mix_rate", 0)),
-            silence_threshold=db_to_linear(self.read_value("threhold", -60)),
+            silence_threshold=detection_threshold(self.read_value("threhold", -60)),
             denoiser=mode,
             passthrough=bool(self.read_value("im", False)),
             output_gain=0.0 if self.window.owner.studio_tools.muted else 1.0,
@@ -431,7 +468,9 @@ class AmdEdition:
                 "model": str(self.read_value("pth_path", "")),
                 "chunk_ms": str(opts["chunk_ms"]), "pitch": str(opts["pitch"]),
                 "input": opts["input_device"], "output": opts["output_device"],
-                "provider": "DirectML"
+                "provider": "DirectML",
+                "quality": self.quality.currentData(),
+                "rnnoise": "1" if opts["denoiser"] == "rnnoise" else "0",
             })
             save_preferences(self._cfg)
             self._status("AMD motoru başladı · DirectML")
@@ -504,6 +543,19 @@ class AmdEdition:
         if not self.bridge.running:
             return
         metrics = self.bridge.snapshot_metrics()
+        from tools.rvc_amd_quality import likely_quality_problems
+        denoiser = "rnnoise" if (
+            getattr(self.window, "noise_panel", None) is not None
+            and self.window.noise_panel.enabled.isChecked()
+        ) else "off"
+        problems = likely_quality_problems(
+            metrics, self.chunk.value() * 10,
+            denoiser, float(self.read_value("threhold", -60))
+        )
+        for problem in problems:
+            if problem not in self._quality_warning_seen:
+                self._quality_warning_seen.add(problem)
+                self._status("Kalite uyarısı: " + problem)
         for key, text in (
             ("infer_time", "—" if metrics.get("infer_ms") is None
              else f"{metrics['infer_ms']:.0f}"),
