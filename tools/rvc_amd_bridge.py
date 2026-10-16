@@ -106,7 +106,7 @@ def load_preferences() -> dict:
 def save_preferences(data: dict) -> None:
     """Only store user-controlled model paths/settings, never raw audio."""
     SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    allowed = ("model", "embedder", "f0", "input", "output", "provider", "chunk_ms", "pitch")
+    allowed = ("model", "embedder", "f0", "input", "output", "provider", "chunk_ms", "pitch", "quality", "rnnoise")
     payload = {key: str(data.get(key, "")) for key in allowed}
     temporary = SETTINGS_FILE.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
