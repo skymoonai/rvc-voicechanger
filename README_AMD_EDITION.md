@@ -109,3 +109,55 @@ and PowerShell install/uninstall. It **cannot validate exact UI hooks from
 the released 1.5.2 binary**, nor an actual AMD GPU/microphone in AppSandbox.
 This is deliberately **not production-ready**. The stable RVC Studio app is
 not modified in GitHub `main`.
+
+
+## 2026-10-16 — peltek / anlaşılmaz ses kalite düzeltmesi
+
+**Kaynakta bulunan riskler:** AMD Edition önizlemesi başlangıçta 200 ms
+chunk ile `vc-rs` CLI'nin değiştirilmemiş varsayılan **85 ms crossfade**
+ve **100 ms extra convert** ayarlarını kullanıyordu. Eski Python RVC
+başlangıcı `extra_time=2.5 s`, `crossfade_time=50 ms` ayarlarıyla
+geliyor. Bu birebir eşdeğer işlem değil; özellikle hızlı ünsüz
+geçişlerinde 85/200 oranlı SOLA pencere ses bulanıklığını artırabilir.
+
+**Düzeltmeler:**
+- **Net konuşma (varsayılan):** chunk 400 ms, crossfade 40 ms,
+  extra convert 400 ms.
+- **Dengeli:** chunk 300 ms, crossfade 40 ms, extra 250 ms.
+- **Düşük gecikme (deneysel):** chunk 200 ms, crossfade 30 ms,
+  extra 150 ms.
+- Kullanıcının chunk kaydırıcısı korunur. Çok küçük chunk değerinde
+  crossfade ayrıca üst sınırla kısaltılır.
+- Ses algılama eşiği `-60 dB` minimumunda Rust `0.0` alır ve
+  otomatik sessizlik kapısı uygulanmaz. Kullanıcı daha yüksek eşik
+  seçerse bunların sözcük sonlarını kesebileceği günlükte bildirilir.
+- RNNoise, eski NVIDIA seçimine bakılmaksızın AMD için varsayılan
+  **kapalıdır**. AMD'ye özel ayrı ayar kaydı vardır.
+- Rust `input_overruns`, `output_underruns`, `output_dropped_samples`
+  ve 400ms chunk için işleme süresi aşımlarını Günlük üzerinden bildirir.
+- CPAL `vc-rs doctor` varsayılan ses aygıtlarını da okur. Mikrofon
+  girişi ile ses çıkışı aynı VAC cihazına gidiyorsa yeniden dönüştürmeye
+  beslenen ses döngüsü oluşabileceğinden çalıştırma engellenir.
+
+Bu değişiklikler önce olası kaynakları azaltır; tek başına tüm
+PTH→ONNX modellerinin sesinin NVIDIA ile eşdeğer olacağını **garanti
+etmez**. Kullanılan vc-rs motorunda RVC "Protect" (sessiz ünsüz koruma)
+kontrolü doğrudan bulunmuyor.
+
+### Kaliteyi karşılaştırma sırası
+
+1. **Mikrofon** ile **Ses çıkışı** seçimini kontrol edin. Önceki
+   AppSandbox `vc-rs doctor` ikisini de `Line 1 (Virtual Audio Cable)`
+   göstermişti. Bu, bir geri besleme riskidir; iki ayrı uç seçin.
+2. Pitch **0**, RNNoise **kapalı**, ses algılama eşiği **-60 dB** ve
+   **Net konuşma** profilinde aynı cümleyi deneyin.
+3. Rust Günlük'te input_overruns/output_underruns/output_dropped_samples
+   sıfır mı, `processing` chunk süresini aşıyor mu kontrol edin.
+4. Aynı ONNX dosyasıyla `vc-gui.exe` (aynı model, cihaz, chunk) testi
+   yapın. İki program da kötüyse model dönüştürme/temel Rust çıkarımı
+   kaynaklı olabilir; yalnızca Studio kötü ise yönlendirme/ön işleme.
+5. Canlı seste kötü ama `Dosyadan Dönüştür` iyi ise mikrofon-VAC,
+   tampon düşmesi ve monitörde iki sesin üst üste dinlenmesini inceleyin.
+
+Entegrasyon hâlâ beta: kullanıcıya gerçek GPU/çevrim içi ses
+performansı garanti edilmez.
