@@ -65,6 +65,7 @@ $required = @(
     'rvc_amd_tasks.py',
     'rvc_amd_monitor.py',
     'rvc_amd_soundpad.py',
+    'rvc_amd_quality.py',
     'rvc_amd_assets.py',
     'rvc_amd_devices.py',
     'rvc_amd_convert.py',
