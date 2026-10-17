@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import numpy as np
 from tools import rvc_ort_worker as worker
+REAL_SESSION = worker.session
 
 
 class FakeInput:
@@ -113,7 +114,7 @@ class OrtdmlTests(unittest.TestCase):
                 observed.append((path, providers))
                 return FakeSession("rvc")
         with patch.dict(sys.modules, {"onnxruntime": ORT}):
-            worker.session("test.onnx")
+            REAL_SESSION("test.onnx")
         self.assertFalse(options.enable_mem_pattern)
         self.assertEqual(options.execution_mode, "seq")
         self.assertEqual(observed[0][1][0][0], "DmlExecutionProvider")
@@ -135,7 +136,7 @@ class OrtdmlTests(unittest.TestCase):
                 return CPU("rvc")
         with patch.dict(sys.modules, {"onnxruntime": ORT}):
             with self.assertRaisesRegex(worker.EngineError, "DmlExecutionProvider"):
-                worker.session("test.onnx")
+                REAL_SESSION("test.onnx")
 
     def test_index_is_independent_from_model_engine(self):
         vectors = np.ones((50,768), np.float32)*.5
