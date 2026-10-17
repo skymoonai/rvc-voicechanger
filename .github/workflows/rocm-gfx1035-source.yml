@@ -9,6 +9,10 @@ on:
       - 'scripts/setup_rocm_680m_preview.ps1'
       - 'scripts/run_rocm_680m_preview.ps1'
       - 'tests/test_rocm_gfx1035.py'
+      - 'tests/test_rocm_force.py'
+      - 'tools/rvc_rocm_strict.py'
+      - 'tools/rvc_runtime_backend.py'
+      - 'tools/rvc_modern_qt.py'
       - '.github/workflows/rocm-gfx1035-source.yml'
   pull_request:
     paths:
@@ -17,6 +21,10 @@ on:
       - 'scripts/setup_rocm_680m_preview.ps1'
       - 'scripts/run_rocm_680m_preview.ps1'
       - 'tests/test_rocm_gfx1035.py'
+      - 'tests/test_rocm_force.py'
+      - 'tools/rvc_rocm_strict.py'
+      - 'tools/rvc_runtime_backend.py'
+      - 'tools/rvc_modern_qt.py'
       - '.github/workflows/rocm-gfx1035-source.yml'
   workflow_dispatch:
 
@@ -33,8 +41,9 @@ jobs:
           python-version: '3.12'
       - name: Source syntax and HIP fail-closed regression checks
         run: |
-          python -m py_compile configs/config.py scripts/check_rocm.py tests/test_rocm_gfx1035.py tools/rvc_runtime_backend.py
-          python -m unittest discover -s tests -p test_rocm_gfx1035.py -v
+          python -m py_compile configs/config.py scripts/check_rocm.py tests/test_rocm_gfx1035.py tests/test_rocm_force.py tools/rvc_runtime_backend.py tools/rvc_rocm_strict.py tools/rvc_modern_qt.py
+          python -m unittest discover -s tests -p 'test_rocm_gfx1035.py' -v
+          python -m unittest discover -s tests -p 'test_rocm_force.py' -v
   powershell-parser:
     runs-on: windows-latest
     steps:
