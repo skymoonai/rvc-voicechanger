@@ -310,6 +310,7 @@ def realtime(args):
                  infer_ms=0., input_rms=0., output_rms=0.)
     history = deque(maxlen=max_history)
     audio_stop = threading.Event()
+    fatal_errors = []
     last_report = [time.monotonic()]
 
     def mic_callback(indata, frames, _time, status):
@@ -360,6 +361,7 @@ def realtime(args):
                     emit("metrics", **stats)
                     last_report[0] = time.monotonic()
             except Exception as exc:
+                fatal_errors.append(str(exc))
                 emit("error", message=str(exc))
                 audio_stop.set()
 
@@ -378,34 +380,47 @@ def realtime(args):
     finally:
         audio_stop.set()
         worker.join(timeout=3)
+    if fatal_errors:
+        raise EngineError("Canli DirectML islemi durdu: " + fatal_errors[-1])
 
 
 def offline(args):
+    """Streaming 48k WAV conversion, bounded memory for arbitrarily long audio."""
     import soundfile as sf
-    from scipy.signal import resample_poly
     pipeline = RvcPipeline(args.model, args.embedder, args.f0_model,
                            args.pitch_shift, args.index, args.index_rate, args.protect)
-    wave, rate = sf.read(args.input, dtype="float32", always_2d=True)
-    wave = np.asarray(wave.mean(axis=1), np.float32)
-    if rate != 48000:
-        wave = resample(wave, rate, 48000)
     chunk_samples = 48000 * args.chunk_ms // 1000
-    history_len = 48000*(args.chunk_ms+args.extra_convert_ms)//1000
-    parts = []
-    for start in range(0, len(wave), chunk_samples):
-        raw = wave[start:start+chunk_samples]
-        history = wave[max(0, start+len(raw)-history_len):start+len(raw)]
-        new, elapsed, _ = convert_chunk(
-            pipeline, history, args.chunk_ms, args.extra_convert_ms,
-            rms_mix_rate=args.rms_mix_rate, silence_threshold=args.silence_threshold)
-        parts.append(new[:len(raw)])
-        if len(parts) % 5 == 0:
-            emit("metrics", infer_ms=round(elapsed, 1), completed=start+len(raw),
-                 total=len(wave))
-    output = np.concatenate(parts) if parts else np.zeros(0, np.float32)
-    sf.write(args.output, output, 48000, subtype="PCM_16")
+    history_len = 48000 * (args.chunk_ms + args.extra_convert_ms) // 1000
+    history = deque(maxlen=history_len)
+    with sf.SoundFile(args.input, "r") as source:
+        if source.samplerate != 48000:
+            raise EngineError(
+                "WAV DirectML girdisi 48kHz olmali. Studio dosya yoneticisi "
+                "kaynak sesi otomatik 48kHz'e donusturur."
+            )
+        total = len(source)
+        with sf.SoundFile(args.output, "w", samplerate=48000,
+                          channels=1, subtype="PCM_16") as target:
+            completed = 0
+            while True:
+                data = source.read(chunk_samples, dtype="float32", always_2d=True)
+                if not len(data):
+                    break
+                samples = np.asarray(data.mean(axis=1), np.float32)
+                history.extend(samples.tolist())
+                converted, elapsed, _rms = convert_chunk(
+                    pipeline, np.asarray(history, np.float32),
+                    args.chunk_ms, args.extra_convert_ms,
+                    rms_mix_rate=args.rms_mix_rate,
+                    silence_threshold=args.silence_threshold,
+                )
+                target.write(converted[:len(samples)])
+                completed += len(samples)
+                if completed % (5*chunk_samples) < chunk_samples:
+                    emit("metrics", infer_ms=round(elapsed, 1),
+                         completed=completed, total=total)
     emit("status", message="WAV DirectML donusumu tamamlandi",
-         samples=len(output))
+         samples=completed)
 
 
 def parse(argv=None):
