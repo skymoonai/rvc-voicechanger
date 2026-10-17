@@ -36,17 +36,28 @@ def get_device_dtype_sm(idx) :
 
     mem_gb = mem_bytes / (1024**3) + 0.4
     if ROCM_BUILD:
-        # Do not apply NVIDIA SM/GTX dtype rules to an AMD ROCm adapter.
-        # Start conservatively with fp32; enable fp16 only after RVC model tests.
-        if mem_gb < 4:
-            return cpu, torch.float32, 0.0, 0.0
+        # On integrated Radeon GPUs (e.g. Radeon 680M / gfx1035) Windows and
+        # torch memory accounting may report a small dedicated VRAM aperture
+        # even though larger shared system RAM is available. NVIDIA's 4 GiB
+        # dedicated VRAM cutoff is NOT valid for ROCm UMA hardware.
+        #
+        # Never trust a "Radeon" display adapter name alone (AppSandbox can
+        # expose a GPU-PV label without functioning HIP queues). Run a REAL
+        # HIP convolution test and synchronize before registering the device.
+        # Keep FP32; mixed precision needs RVC/RMVPE validation per GPU.
         try:
-            probe = torch.ones(1, device=cuda, dtype=torch.float32)
-            if float((probe + 1).cpu()[0]) != 2.0:
-                raise RuntimeError('ROCm GPU probe returned an invalid result')
+            with torch.inference_mode():
+                signal = torch.ones(1, 1, 128, device=cuda, dtype=torch.float32)
+                filt = torch.ones(1, 1, 3, device=cuda, dtype=torch.float32)
+                result = torch.nn.functional.conv1d(signal, filt, padding=1)
+                torch.cuda.synchronize(cuda)
+                if result.shape != (1, 1, 128) or float(result[0, 0, 32].cpu()) != 3.0:
+                    raise RuntimeError('ROCm convolution probe returned invalid data')
         except Exception:
-            logger.exception('AMD ROCm GPU %s cannot run a basic inference probe', idx)
+            logger.exception('AMD ROCm GPU %s cannot execute synchronized HIP kernels', idx)
             return cpu, torch.float32, 0.0, 0.0
+        logger.info('ROCm HIP GPU %d recognized (reported %.2f GiB; UMA may use shared RAM).',
+                    idx, mem_gb)
         return cuda, torch.float32, 0.0, mem_gb
     sm_version = major + minor / 10.0
     is_16_series = bool(re.search(r"16\d{2}", gpu_name)) and sm_version == 7.5

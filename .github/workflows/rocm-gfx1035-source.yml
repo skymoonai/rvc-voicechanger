@@ -1,0 +1,69 @@
+name: ROCm Radeon 680M source checks
+
+on:
+  push:
+    branches: [feature/rocm-gfx1035-studio-preview]
+    paths:
+      - 'configs/config.py'
+      - 'scripts/check_rocm.py'
+      - 'scripts/setup_rocm_680m_preview.ps1'
+      - 'scripts/run_rocm_680m_preview.ps1'
+      - 'tests/test_rocm_gfx1035.py'
+      - 'tests/test_rocm_force.py'
+      - 'tools/rvc_rocm_strict.py'
+      - 'tools/rvc_runtime_backend.py'
+      - 'tools/rvc_modern_qt.py'
+      - '.github/workflows/rocm-gfx1035-source.yml'
+  pull_request:
+    paths:
+      - 'configs/config.py'
+      - 'scripts/check_rocm.py'
+      - 'scripts/setup_rocm_680m_preview.ps1'
+      - 'scripts/run_rocm_680m_preview.ps1'
+      - 'tests/test_rocm_gfx1035.py'
+      - 'tests/test_rocm_force.py'
+      - 'tools/rvc_rocm_strict.py'
+      - 'tools/rvc_runtime_backend.py'
+      - 'tools/rvc_modern_qt.py'
+      - '.github/workflows/rocm-gfx1035-source.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-python-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Source syntax and HIP fail-closed regression checks
+        run: |
+          python -m py_compile configs/config.py scripts/check_rocm.py tests/test_rocm_gfx1035.py tests/test_rocm_force.py tools/rvc_runtime_backend.py tools/rvc_rocm_strict.py tools/rvc_modern_qt.py
+          python -m unittest discover -s tests -p 'test_rocm_gfx1035.py' -v
+          python -m unittest discover -s tests -p 'test_rocm_force.py' -v
+  powershell-parser:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Windows PowerShell 5.1 parse
+        shell: powershell
+        run: |
+          $files = @(
+            'scripts/setup_rocm_680m_preview.ps1',
+            'scripts/run_rocm_680m_preview.ps1'
+          )
+          foreach ($path in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Join-Path $PWD $path), [ref]$tokens, [ref]$errors
+            ) | Out-Null
+            if ($errors -and $errors.Count -gt 0) {
+              $errors | Format-List
+              throw ('PowerShell syntax invalid: ' + $path)
+            }
+          }
+          Write-Host 'ROCm 680M PowerShell scripts parse OK.'

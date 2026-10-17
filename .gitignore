@@ -280,3 +280,6 @@ configs/session.json
 *.key
 *.secret
 
+
+# Isolated ROCm Radeon 680M nightly environment
+.venv-rocm-gfx1035/

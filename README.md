@@ -1,3 +1,5 @@
+> **AMD Radeon 680M / ROCm gfx1035 EXPERIMENTAL BRANCH:** This is NOT the production RVC Studio release. It uses the original PTH/INDEX engine with AMD TheRock nightlies, separate Python environment, and mandatory real HIP GPU checks. Standard Windows ROCm PyTorch does not officially support Radeon 680M. AppSandbox GPU-PV may fail. See [ROCm 680M setup and limitations](docs/AMD_ROCM_680M_PREVIEW.md). **Do not install the normal NVIDIA/DirectML Setup.exe expecting ROCm.**
+
 <div align="center">
 
 # 🎙️ RVC Studio
