@@ -854,9 +854,9 @@ class Window:
                                   'Ses dönüştürme motorunu CPU veya ekran kartında çalıştır. Değişiklik için dönüşümü yeniden başlat.')
         cpl.addWidget(self._text('İşlemci / GPU tercihi', 'eyebrow'))
         cpl.addWidget(self._combo('compute_backend',
-                                  ['Otomatik', 'CPU', 'Ekran Kartı (GPU)'],
+                                  ['Otomatik', 'CPU', 'Ekran Kartı (GPU)', "AMD ROCm'yi Zorla (Deneysel)"],
                                   data.get('compute_backend', 'Otomatik')))
-        compute_status = self._text('Seçim, sesi başlattığında uygulanır. GPU seçeneği kurulu CUDA / ROCm / DirectML gerektirir.')
+        compute_status = self._text('ROCm\'yi Zorla yalnızca gerçek HIP GPU testi geçerse çalışır; CPU/DirectML\'ye dönmez. AppSandbox GPU-PV için garanti edilmez.')
         self._register('compute_backend_status', compute_status, 'label')
         cpl.addWidget(compute_status)
         perf.addWidget(compute)
