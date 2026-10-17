@@ -1,7 +1,9 @@
 # Launch original RVC Studio Python GUI with experimental TheRock ROCm HIP.
 # The Rust vc-rs/ONNX edition is not loaded. Models remain PTH/INDEX.
 [CmdletBinding()]
-param()
+param(
+    [switch]$ForceROCm
+)
 $ErrorActionPreference = 'Stop'
 if (-not $PSCommandPath) { throw 'Save and execute the .ps1 script.' }
 $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
@@ -15,6 +17,14 @@ try {
     $env:RVC_RUNTIME_PROFILE = 'rocm'
     $env:RVC_CUDA_GRAPH = '0'
     $env:RVC_ROCM_REQUIRE_GFX = 'gfx1035'
+    if ($ForceROCm) {
+        # This NEVER enables unsupported hardware. It forces explicit HIP
+        # validation and forbids fallback if the GUI setting was CPU/Auto.
+        $env:RVC_ROCM_FORCE = '1'
+        Write-Host '[ROCm Zorla] CPU/DirectML fallback kapalı; gerçek HIP hesaplaması zorunlu.' -ForegroundColor Yellow
+    } else {
+        $env:RVC_ROCM_FORCE = '0'
+    }
     $env:PYTHONUTF8 = '1'
     & $python 'scripts/check_rocm.py'
     if ($LASTEXITCODE -ne 0) {
