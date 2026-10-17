@@ -2,6 +2,8 @@
 import sys
 import types
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
@@ -137,6 +139,24 @@ class OrtdmlTests(unittest.TestCase):
         with patch.dict(sys.modules, {"onnxruntime": ORT}):
             with self.assertRaisesRegex(worker.EngineError, "DmlExecutionProvider"):
                 REAL_SESSION("test.onnx")
+
+    def test_wav_conversion_streams_and_preserves_sample_count(self):
+        import soundfile as sf
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            source, target = folder / "in.wav", folder / "out.wav"
+            sf.write(source, np.zeros(48000, np.float32), 48000)
+            args = types.SimpleNamespace(
+                model="rvc.onnx", embedder="content.onnx", f0_model="rmvpe.onnx",
+                pitch_shift=0, index="", index_rate=0., protect=.5,
+                chunk_ms=400, extra_convert_ms=400, rms_mix_rate=1.,
+                silence_threshold=0., input=str(source), output=str(target)
+            )
+            worker.offline(args)
+            data, rate = sf.read(target)
+            self.assertEqual(rate, 48000)
+            self.assertEqual(len(data), 48000)
+            self.assertAlmostEqual(float(np.mean(data)), .1, places=3)
 
     def test_index_is_independent_from_model_engine(self):
         vectors = np.ones((50,768), np.float32)*.5
