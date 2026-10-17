@@ -49,3 +49,6 @@ jobs:
           python -m pip install onnxruntime-directml==1.24.2 'numpy>=1.26.4,<2' 'scipy>=1.11,<1.16' 'sounddevice>=0.5,<1' 'soundfile>=0.12,<1' 'faiss-cpu>=1.8,<2'
           python -m pip check
           python -c "import onnxruntime as ort; assert 'DmlExecutionProvider' in ort.get_available_providers(); print('DML EP package OK:',ort.__version__)"
+      - name: Synthetic 1.5.2 in-place upgrade from Rust + exact rollback
+        shell: powershell
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_ort_installer_smoke.ps1
