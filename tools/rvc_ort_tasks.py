@@ -15,7 +15,7 @@ from pathlib import Path
 from types import MethodType
 
 from tools.rvc_ort_bridge import (resolve_voice_model, WIN_FLAGS as CREATION_FLAGS, build_common, ROOT)
-from tools.rvc_amd_quality import quality_settings
+from tools.rvc_ort_quality import quality_settings
 from tools.rvc_amd_convert import convert_pth
 
 
