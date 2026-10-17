@@ -125,6 +125,43 @@ improve voice quality: converting the sound via the original RVC model avoids
 vc-rs's ONNX/converter differences, **but poor input audio, source voice
 mismatch, misconfigured audio devices or a too-slow GPU will still sound bad**.
 
+## ROCm'yi Zorla (deneysel)
+
+This strict mode is now integrated into the **original RVC Studio**
+`Ayarlar → Hesaplama Aygıtı` dropdown:
+
+**AMD ROCm'yi Zorla (Deneysel)**
+
+Alternatively, from the separate ROCm source folder, launch:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run_rocm_680m_preview.ps1 -ForceROCm
+```
+
+This switch sets `RVC_ROCM_FORCE=1` for the ROCm source process. It
+forces the original **PTH/INDEX** RVC PyTorch engine to select actual
+HIP `cuda:0` with FP32; it does **not** run vc-rs/ONNX. It overrides an
+accidentally saved CPU/Auto backend preference for that process, and
+**refuses silent CPU, NVIDIA CUDA or DirectML fallback**.
+
+The required proof is:
+- PyTorch must be an actual ROCm/HIP build (`torch.version.hip`).
+- HIP GPU must enumerate; architecture must match actual **gfx1035**.
+- GPU FP32 `conv1d` and STFT must execute and synchronize successfully.
+- If not, RVC Studio reports a precise error and **does not start
+  voice conversion**. GPU-PV exposure through AppSandbox is not enough.
+
+This is a *forcing of backend selection and diagnostics*,
+**not a way to enable missing ROCm drivers or unsupported virtualized HIP
+hardware**. Do not set `HSA_OVERRIDE_GFX_VERSION` to spoof a different GPU,
+copy random DLLs or overwrite Microsoft AppSandbox drivers.
+
+If `-ForceROCm` immediately reports missing HIP GPU with the user's
+Microsoft signed Radeon display driver, use a native Windows host (if
+TheRock driver's Windows prerequisites are met) instead of installing
+more nightly libraries into the VM. No public release is approved until
+a real Radeon 680M RVC voice test passes.
+
 ## Rolling back
 
 Close the ROCm GUI and run the ordinary installed RVC Studio/NVIDIA/DirectML
