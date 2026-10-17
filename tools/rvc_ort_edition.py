@@ -153,7 +153,7 @@ class AmdEdition:
             parent = self.window.root
 
         chunk_row = parent.parentWidget().layout() if parent.parentWidget() else None
-        from tools.rvc_amd_quality import PRESETS, DEFAULT_PRESET
+        from tools.rvc_ort_quality import PRESETS, DEFAULT_PRESET
         self.quality_caption = QLabel("Konuşma kalitesi")
         self.quality = QComboBox()
         for code, setting in PRESETS.items():
@@ -210,7 +210,7 @@ class AmdEdition:
             chunk_row.addWidget(self.status_label)
 
     def _quality_changed(self, *_args):
-        from tools.rvc_amd_quality import PRESETS
+        from tools.rvc_ort_quality import PRESETS
         preset = PRESETS[self.quality.currentData()]
         self.chunk.setValue(preset.chunk_ms // 10)
         self.schedule_restart()
@@ -442,7 +442,7 @@ class AmdEdition:
         raise VcRsError("RVC v2/F0 PTH veya geçerli bir ONNX dosyası seç.")
 
     def _start_args(self, model):
-        from tools.rvc_amd_quality import (quality_settings, detection_threshold,
+        from tools.rvc_ort_quality import (quality_settings, detection_threshold,
                                            check_audio_feedback)
         noise = getattr(self.window, "noise_panel", None)
         rnnoise = bool(noise.enabled.isChecked()) if noise else False
@@ -564,7 +564,7 @@ class AmdEdition:
         if not self.bridge.running:
             return
         metrics = self.bridge.snapshot_metrics()
-        from tools.rvc_amd_quality import likely_quality_problems
+        from tools.rvc_ort_quality import likely_quality_problems
         denoiser = "rnnoise" if (
             getattr(self.window, "noise_panel", None) is not None
             and self.window.noise_panel.enabled.isChecked()
