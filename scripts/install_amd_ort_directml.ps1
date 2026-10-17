@@ -17,6 +17,7 @@ $settings = Join-Path $env:LOCALAPPDATA 'RVCStudio'
 $state = Join-Path $settings 'amd_ort_rollback.json'
 $required = @(
   'rvc_ort_edition.py', 'rvc_ort_bridge.py', 'rvc_ort_worker.py', 'rvc_ort_tasks.py',
+  'rvc_ort_quality.py',
   'rvc_amd_assets.py', 'rvc_amd_monitor.py', 'rvc_amd_soundpad.py',
   'rvc_amd_quality.py', 'rvc_amd_metrics.py', 'rvc_amd_convert.py'
 )
