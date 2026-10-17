@@ -4,7 +4,9 @@ The selection changes the active RVC inference engine, not merely a UI label.
 It does not install GPU drivers or PyTorch backends.
 """
 
-MODES = ('Otomatik', 'CPU', 'Ekran Kartı (GPU)')
+from tools.rvc_rocm_strict import FORCE_MODE, wants_force, verify_gpu
+
+MODES = ('Otomatik', 'CPU', 'Ekran Kartı (GPU)', FORCE_MODE)
 
 
 def choose_backend(mode):
@@ -17,6 +19,16 @@ def choose_backend(mode):
 
     if mode not in MODES:
         mode = MODES[0]
+
+    # Intentional strict behavior: if user selects the experimental choice
+    # OR launches with RVC_ROCM_FORCE=1, never silently fall back to CPU,
+    # DirectML or NVIDIA CUDA. Reject missing HIP/actual GPU instead.
+    if wants_force(mode):
+        device, name, architecture = verify_gpu(torch)
+        print("[ROCm Zorla] HIP GPU doğrulandı: %s (%s); fallback KAPALI"
+              % (name, architecture), flush=True)
+        return device, torch.float32, 'AMD ROCm (Zorla / Deneysel)'
+
     if mode == 'CPU':
         return torch.device('cpu'), torch.float32, 'CPU'
 
