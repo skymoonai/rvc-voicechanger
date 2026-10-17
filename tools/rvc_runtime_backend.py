@@ -25,7 +25,9 @@ def choose_backend(mode):
     # DirectML or NVIDIA CUDA. Reject missing HIP/actual GPU instead.
     if wants_force(mode):
         device, name, architecture = verify_gpu(torch)
-        print("[ROCm Zorla] HIP GPU doğrulandı: %s (%s); fallback KAPALI"
+        # Older Windows PowerShell builds may use cp1252; keep this boot
+        # diagnostic ASCII-only so forced HIP never crashes on text encoding.
+        print("[ROCm FORCE] HIP GPU verified: %s (%s); fallback DISABLED"
               % (name, architecture), flush=True)
         return device, torch.float32, 'AMD ROCm (Zorla / Deneysel)'
 
