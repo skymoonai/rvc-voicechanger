@@ -162,7 +162,7 @@ class AmdEdition:
         self.quality.setCurrentIndex(max(0, self.quality.findData(selected_quality)))
         self.chunk_caption = QLabel("Ses parçası / Chunk: 400 ms")
         self.chunk = QSlider(Qt.Orientation.Horizontal)
-        self.chunk.setMinimum(5)
+        self.chunk.setMinimum(10)  # ORT engine requires >=100ms chunks
         self.chunk.setMaximum(100)
         self.chunk.setSingleStep(1)
         self.chunk.setPageStep(5)
