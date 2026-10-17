@@ -21,6 +21,9 @@ class ToyTensor:
     def __init__(self, shape):
         self.shape = shape
 
+    def __truediv__(self, scalar):
+        return ToyTensor(self.shape)
+
     def reshape(self, *shape):
         return ToyTensor((1, 1, 4096))
 
