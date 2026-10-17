@@ -1,0 +1,51 @@
+name: AMD ONNX Runtime DirectML Edition validation
+on:
+  push:
+    branches: [feature/amd-onnxruntime-directml]
+  pull_request:
+    paths:
+      - 'tools/rvc_ort_*.py'
+      - 'tests/test_amd_ort_runtime.py'
+      - 'scripts/install_amd_ort_directml.ps1'
+      - '.github/workflows/amd-ort-directml-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  python-unit:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Runtime dependencies for mocked ORT inference
+        run: python -m pip install numpy==1.26.4 scipy==1.14.1
+      - name: Compile files and exercise engine shape/EP tests
+        run: |
+          python -m py_compile tools/rvc_ort_worker.py tools/rvc_ort_bridge.py tools/rvc_ort_tasks.py tools/rvc_ort_edition.py tests/test_amd_ort_runtime.py
+          python -m unittest discover -s tests -p test_amd_ort_runtime.py -v
+  installer-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PowerShell 5.1 grammar
+        shell: powershell
+        run: |
+          $tokens=$null; $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'scripts/install_amd_ort_directml.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors) { $errors | Format-List; throw 'Installer PowerShell 5.1 syntax invalid' }
+          Write-Host 'PowerShell installer parse: OK'
+  dml-package-preflight:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify pip wheel + DirectML provider (not actual GPU inference)
+        run: |
+          python -m pip install onnxruntime-directml==1.24.2 'numpy>=1.26.4,<2' 'scipy>=1.11,<1.16' 'sounddevice>=0.5,<1' 'soundfile>=0.12,<1' 'faiss-cpu>=1.8,<2'
+          python -m pip check
+          python -c "import onnxruntime as ort; assert 'DmlExecutionProvider' in ort.get_available_providers(); print('DML EP package OK:',ort.__version__)"
